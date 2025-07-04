@@ -40,3 +40,20 @@ The included Flask app demonstrates:
 - REST API endpoints
 - Dynamic data generation
 - Web interface with periodic updates
+
+## Files in this template
+
+- **README.md** - This documentation file
+- **Rediaccfile** - Main script with functions to manage the application:
+  - `prep()` - Sets UDP buffer sizes, builds Docker image, sets up tunnel
+  - `up()` - Starts the Flask application container
+  - `down()` - Stops the container and cleans up tunnel
+- **tunnel.sh** - Cloudflare tunnel management script with functions:
+  - `setup()` - Initial Cloudflare authentication and configuration
+  - `up()` - Creates and starts a Cloudflare tunnel
+  - `down()` - Stops and deletes the tunnel
+  - `get_tunnel_id()` - Retrieves tunnel ID by name
+- **web/** - Flask application directory:
+  - **Dockerfile** - Container configuration for Python Flask app
+  - **app.py** - Flask application with SQLite database and API endpoints
+  - **requirements.txt** - Python dependencies (Flask)

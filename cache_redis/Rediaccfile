@@ -1,0 +1,25 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Redis image..."
+    docker pull redis:7-alpine
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+    
+    echo "Starting Redis server..."
+    docker compose up -d
+    return $?
+}
+
+down() {
+    echo "Stopping Redis server..."
+    docker compose down
+    return $?
+}
+
+"$@"

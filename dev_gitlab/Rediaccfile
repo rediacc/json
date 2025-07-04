@@ -1,0 +1,62 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling GitLab CE image..."
+    docker pull gitlab/gitlab-ce:latest
+    
+    echo "Creating directories..."
+    mkdir -p ./config
+    mkdir -p ./logs
+    mkdir -p ./data
+    chmod -R 755 ./config ./logs ./data
+    
+    echo "Note: GitLab requires significant resources (4GB+ RAM recommended)"
+    
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+    
+    echo "Starting GitLab CE..."
+    docker run -d \
+        --name ${CONTAINER_NAME} \
+        --restart always \
+        --hostname ${GITLAB_HOSTNAME} \
+        -p ${GITLAB_HTTP_PORT}:80 \
+        -p ${GITLAB_HTTPS_PORT}:443 \
+        -p ${GITLAB_SSH_PORT}:22 \
+        -e GITLAB_OMNIBUS_CONFIG="external_url 'http://${GITLAB_HOSTNAME}:${GITLAB_HTTP_PORT}'; gitlab_rails['gitlab_shell_ssh_port'] = ${GITLAB_SSH_PORT}; ${GITLAB_OMNIBUS_CONFIG}" \
+        -v $(pwd)/config:/etc/gitlab \
+        -v $(pwd)/logs:/var/log/gitlab \
+        -v $(pwd)/data:/var/opt/gitlab \
+        gitlab/gitlab-ce:latest
+    
+    echo "GitLab is starting... This may take several minutes on first run."
+    echo "You can monitor the startup with: docker logs -f ${CONTAINER_NAME}"
+    echo ""
+    echo "GitLab will be available at:"
+    echo "  HTTP: http://localhost:${GITLAB_HTTP_PORT}"
+    echo "  HTTPS: https://localhost:${GITLAB_HTTPS_PORT}"
+    echo "  SSH: ssh://git@localhost:${GITLAB_SSH_PORT}"
+    echo ""
+    echo "Initial root password will be in: ./config/initial_root_password"
+    echo "This file will be automatically deleted after 24 hours."
+    
+    return $?
+}
+
+down() {
+    if [ -f .env ]; then
+        source .env
+    fi
+    
+    echo "Stopping GitLab CE..."
+    docker stop ${CONTAINER_NAME}
+    docker rm ${CONTAINER_NAME}
+    return $?
+}
+
+"$@"

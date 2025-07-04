@@ -1,0 +1,42 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Kafka and Zookeeper images..."
+    docker pull confluentinc/cp-kafka:7.5.0
+    docker pull confluentinc/cp-zookeeper:7.5.0
+    docker pull confluentinc/cp-kafka-rest:7.5.0
+    docker pull landoop/kafka-topics-ui:latest
+    
+    echo "Creating data directories..."
+    mkdir -p ./data/zookeeper
+    mkdir -p ./data/kafka
+    chmod -R 755 ./data
+    
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+    
+    echo "Starting Kafka cluster..."
+    docker compose up -d
+    
+    echo "Waiting for Kafka to be ready..."
+    sleep 20
+    
+    echo "Kafka broker is running on localhost:${KAFKA_PORT:-9092}"
+    echo "Kafka Topics UI is available at http://localhost:${KAFKA_TOPICS_UI_PORT:-8000}"
+    echo "Kafka REST Proxy is available at http://localhost:${KAFKA_REST_PORT:-8082}"
+    
+    return $?
+}
+
+down() {
+    echo "Stopping Kafka cluster..."
+    docker compose down
+    return $?
+}
+
+"$@"

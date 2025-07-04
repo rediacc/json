@@ -21,3 +21,11 @@ down  # Stop Nginx server
 
 ## Access
 Open http://localhost in your browser to see the default Nginx welcome page.
+
+## Files in this template
+
+- **README.md** - This documentation file
+- **Rediaccfile** - Bash script with functions to manage Nginx:
+  - `prep()` - Pulls the latest Nginx Docker image
+  - `up()` - Starts Nginx container with port 80 exposed
+  - `down()` - Stops and removes the Nginx container

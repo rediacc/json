@@ -30,3 +30,16 @@ down  # Stop all services
 2. Visit http://localhost:8000
 3. Complete WordPress installation wizard
 4. Your site is ready!
+
+## Files in this template
+
+- **README.md** - This documentation file
+- **Rediaccfile** - Bash script with functions to manage WordPress and MySQL:
+  - `prep()` - Pulls WordPress and MySQL images, creates data directories
+  - `up()` - Starts both services using docker-compose
+  - `down()` - Stops and removes all containers
+- **docker-compose.yaml** - Docker Compose configuration with:
+  - WordPress service with environment variables for database connection
+  - MySQL 8.0 service with database initialization
+  - Persistent volumes for both WordPress content and MySQL data
+  - Auto-restart policy for reliability

@@ -25,3 +25,16 @@ down  # Stop SQL Server
 ```bash
 sqlcmd -S localhost,1433 -U sa -P 'yourStrong(!)Password'
 ```
+
+## Files in this template
+
+- **README.md** - This documentation file
+- **Rediaccfile** - Bash script with functions to manage the SQL Server container:
+  - `prep()` - Pulls the SQL Server image and creates data directories
+  - `up()` - Starts SQL Server using docker-compose
+  - `down()` - Stops and removes the SQL Server container
+- **docker-compose.yaml** - Docker Compose configuration for SQL Server with:
+  - Environment variables from .env file
+  - Port mapping for SQL Server (1433)
+  - Volume mounts for data persistence
+- **.env** - Environment variables file (create this with your configuration)

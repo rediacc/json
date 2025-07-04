@@ -25,3 +25,17 @@ down  # Stop all services
 ```bash
 mysql -h localhost -P 3306 -u root -prootpassword
 ```
+
+## Files in this template
+
+- **README.md** - This documentation file
+- **Rediaccfile** - Bash script with functions to manage MariaDB and phpMyAdmin:
+  - `prep()` - Pulls MariaDB and phpMyAdmin images, creates data directory
+  - `up()` - Starts both services using docker-compose
+  - `down()` - Stops and removes all containers
+- **docker-compose.yaml** - Docker Compose configuration with:
+  - MariaDB service with persistent storage
+  - phpMyAdmin service for web-based database management
+  - Custom Docker network for service isolation
+  - Environment variables from .env file
+- **.env** - Environment variables file (create this with your configuration)

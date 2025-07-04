@@ -1,0 +1,54 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Kong and PostgreSQL images..."
+    docker pull kong:latest
+    docker pull postgres:13-alpine
+    docker pull pantsel/konga:latest
+    
+    echo "Creating data directory..."
+    mkdir -p ./data
+    chmod 755 ./data
+    
+    echo "Creating Kong network..."
+    docker network create kong-net 2>/dev/null || true
+    
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+    
+    echo "Starting Kong API Gateway..."
+    docker compose up -d
+    
+    echo "Waiting for services to start..."
+    sleep 15
+    
+    echo "Running Kong migrations..."
+    docker run --rm \
+        --network=kong-net \
+        -e "KONG_DATABASE=postgres" \
+        -e "KONG_PG_HOST=kong-database" \
+        -e "KONG_PG_USER=${POSTGRES_USER}" \
+        -e "KONG_PG_PASSWORD=${POSTGRES_PASSWORD}" \
+        kong:latest kong migrations bootstrap
+    
+    echo "Kong API Gateway is ready!"
+    echo "Kong Admin API: http://localhost:${KONG_ADMIN_PORT}"
+    echo "Kong Proxy: http://localhost:${KONG_PROXY_PORT}"
+    echo "Konga Admin UI: http://localhost:${KONGA_PORT}"
+    
+    return $?
+}
+
+down() {
+    echo "Stopping Kong API Gateway..."
+    docker compose down
+    docker network rm kong-net 2>/dev/null || true
+    return $?
+}
+
+"$@"
