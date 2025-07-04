@@ -1,0 +1,12 @@
+services:
+  db:
+    env_file:
+      - .env
+    environment:
+      - POSTGRES_PASSWORD=${PGPASSWORD}
+      - PGDATA=/var/lib/postgresql/data/pgdata
+    ports:
+      - ${PGPORT}:5432
+    volumes:
+      - ./data:/var/lib/postgresql/data
+    image: postgres

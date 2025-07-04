@@ -1,0 +1,16 @@
+#!/bin/bash
+
+prep() {
+  docker pull nginx
+  return $?
+}
+
+up() {
+  docker run --rm --detach --name rediacc-nginx --publish 80 nginx
+  return $?
+}
+
+down() {
+  docker stop rediacc-nginx
+  return $?
+}

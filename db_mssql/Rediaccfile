@@ -1,0 +1,21 @@
+#!/bin/bash
+
+prep() {
+  docker pull mcr.microsoft.com/mssql/server:2022-CU15-ubuntu-22.04
+  mkdir -p  data  log  secrets
+  chmod 777 data/ log/ secrets/ 
+  
+  return $?
+}
+
+up() {
+  docker compose up -d
+
+  return $?
+}
+
+down() {
+  docker compose down
+
+  return $?
+}

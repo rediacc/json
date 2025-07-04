@@ -1,0 +1,18 @@
+#!/bin/bash
+
+prep() {
+  docker pull mysql:8.0 && \
+  docker pull wordpress && \
+  mkdir -p wordpress db
+  return $?
+}
+
+up() {
+  docker compose up -d
+  return $?
+}
+
+down() {
+  docker compose down
+  return $?
+}

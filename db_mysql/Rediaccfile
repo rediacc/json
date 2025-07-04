@@ -1,0 +1,18 @@
+#!/bin/bash
+
+prep() {
+  docker pull mariadb:10.3
+  docker pull phpmyadmin
+  mkdir -p data/mariadb
+  return $?
+}
+
+up() {
+  docker compose up -d
+  return $?
+}
+
+down() {
+  docker compose down
+  return $?
+}
