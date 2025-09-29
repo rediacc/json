@@ -695,9 +695,9 @@ EOF
         <p>Returns detailed information and file contents for a specific template.</p>
         <h4>Example URLs:</h4>
         <ul>
-            <li><code>/templates/api_kong.json</code></li>
-            <li><code>/templates/db_mysql.json</code></li>
-            <li><code>/templates/cache_redis.json</code></li>
+            <li><code>/templates/api-gateway_kong.json</code></li>
+            <li><code>/templates/databases_mysql.json</code></li>
+            <li><code>/templates/caching_redis.json</code></li>
         </ul>
         <h4>Response Format:</h4>
         <pre><code>{
@@ -750,7 +750,7 @@ const dockerCompose = template.files.find(f => f.name === 'docker-compose.yaml')
 curl https://json.rediacc.com/templates.json
 
 # Get specific template
-curl https://json.rediacc.com/templates/api_kong.json</code></pre>
+curl https://json.rediacc.com/templates/api-gateway_kong.json</code></pre>
 </body>
 </html>
 EOF
