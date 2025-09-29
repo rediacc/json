@@ -1,0 +1,137 @@
+{
+  "baseMonthlyPrices": {
+    "community": {
+      "price": "Free",
+      "originalPrice": 799,
+      "period": null
+    },
+    "advanced": {
+      "price": 2399,
+      "period": "perMonth"
+    },
+    "premium": {
+      "price": 3899,
+      "period": "perMonth"
+    },
+    "elite": {
+      "price": 6999,
+      "period": "perMonth"
+    }
+  },
+  "yearlyMultipliers": {
+    "community": {
+      "multiplier": 1.0,
+      "savePercent": "0%"
+    },
+    "advanced": {
+      "multiplier": 0.833,
+      "savePercent": "17%"
+    },
+    "premium": {
+      "multiplier": 0.770,
+      "savePercent": "23%"
+    },
+    "elite": {
+      "multiplier": 0.714,
+      "savePercent": "29%"
+    }
+  },
+  "specialDayDiscounts": {
+    "blackFriday": {
+      "name": "pricing.blackFriday",
+      "startDate": "2025-11-28",
+      "endDate": "2025-11-30",
+      "discount": 0.25,
+      "message": "pricing.blackFridayMessage",
+      "icon": "🛍️",
+      "bannerColor": "#000000",
+      "backgroundColor": "#FFA500",
+      "stripeCouponCode": "BLACKFRIDAY25"
+    },
+    "cyberMonday": {
+      "name": "pricing.cyberMonday",
+      "startDate": "2025-12-01",
+      "endDate": "2025-12-01",
+      "discount": 0.30,
+      "message": "pricing.cyberMondayMessage",
+      "icon": "💻",
+      "bannerColor": "#4A90E2",
+      "backgroundColor": "#FFFFFF",
+      "stripeCouponCode": "CYBERMONDAY30"
+    },
+    "newYear": {
+      "name": "pricing.newYearSale",
+      "startDate": "2025-12-31",
+      "endDate": "2026-01-07",
+      "discount": 0.20,
+      "message": "pricing.newYearMessage",
+      "icon": "🎆",
+      "bannerColor": "#FFD700",
+      "backgroundColor": "#000080",
+      "stripeCouponCode": "NEWYEAR20"
+    },
+    "summerSale": {
+      "name": "pricing.summerSale",
+      "startDate": "2025-06-21",
+      "endDate": "2025-09-21",
+      "discount": 0.15,
+      "message": "pricing.summerSaleMessage",
+      "icon": "☀️",
+      "bannerColor": "#FF6B6B",
+      "backgroundColor": "#4ECDC4",
+      "stripeCouponCode": "SUMMER15"
+    },
+    "earlyBird": {
+      "name": "pricing.earlyBirdSpecial",
+      "startDate": "2025-08-03",
+      "endDate": "2025-08-10",
+      "discount": 0.10,
+      "message": "pricing.earlyBirdMessage",
+      "icon": "🐦",
+      "bannerColor": "#FFA07A",
+      "backgroundColor": "#FF6347",
+      "stripeCouponCode": "EARLYBIRD10"
+    },
+    "valentinesDay": {
+      "name": "pricing.valentinesDay",
+      "startDate": "2025-02-13",
+      "endDate": "2025-02-15",
+      "discount": 0.14,
+      "message": "pricing.valentinesDayMessage",
+      "icon": "❤️",
+      "bannerColor": "#FF1493",
+      "backgroundColor": "#FFB6C1",
+      "stripeCouponCode": "VALENTINE14"
+    }
+  },
+  "plans": {
+    "community": {
+      "name": "pricing.tiers.community.title",
+      "isPopular": false,
+      "ctaText": "common.getStarted",
+      "ctaLink": "#demo",
+      "ctaVariant": "secondary"
+    },
+    "advanced": {
+      "name": "pricing.tiers.advanced.title",
+      "isPopular": false,
+      "ctaText": "common.startFreeTrial",
+      "ctaLink": "#demo",
+      "ctaVariant": "primary"
+    },
+    "premium": {
+      "name": "pricing.tiers.premium.title",
+      "isPopular": false,
+      "ctaText": "common.startFreeTrial",
+      "ctaLink": "#demo",
+      "ctaVariant": "primary"
+    },
+    "elite": {
+      "name": "pricing.tiers.elite.title",
+      "isPopular": false,
+      "ctaText": "common.getCustomRoadmap",
+      "ctaLink": "#demo",
+      "ctaVariant": "secondary"
+    }
+  }
+}
