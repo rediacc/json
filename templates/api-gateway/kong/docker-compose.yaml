@@ -7,8 +7,9 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      PGDATA: /pgdata
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./data:/pgdata
     networks:
       - kong-net
     healthcheck:

@@ -5,9 +5,9 @@ services:
       - .env
     environment:
       - POSTGRES_PASSWORD=${PGPASSWORD}
-      - PGDATA=/var/lib/postgresql/data/pgdata
+      - PGDATA=/pgdata
     ports:
       - "5432"
     volumes:
-      - ./data:/var/lib/postgresql/data
+      - ./data:/pgdata
     image: postgres
