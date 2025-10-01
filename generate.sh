@@ -152,8 +152,13 @@ EOF
         local relative_path="${file#$template_dir/}"
         local filename=$(basename "$file")
 
-        # Skip hidden files and directories
-        if [[ "$filename" =~ ^\..*$ ]] || [[ -d "$file" ]]; then
+        # Skip hidden files and directories, except .env files
+        if [[ -d "$file" ]]; then
+            continue
+        fi
+
+        # Skip hidden files except .env
+        if [[ "$filename" =~ ^\..*$ ]] && [[ "$filename" != ".env" ]]; then
             continue
         fi
 
