@@ -252,7 +252,8 @@ EOF
       "file_count": $file_count,
       "has_readme": $has_readme,
       "has_docker": $has_docker,
-      "download_url": "templates/$template_id.json"
+      "download_url": "templates/$template_id.json",
+      "readme": "$(read_file_content "$template_dir/README.md")"
     }
 EOF
         fi
