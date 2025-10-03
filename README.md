@@ -84,7 +84,7 @@ Results are saved to `test-results.json` with detailed information:
 The test workflow runs on:
 - Pull requests to main/master
 - Pushes to main/master
-- Manual workflow dispatch
+- Manual workflow dispatch (see below)
 
 **Smart Testing:**
 - Tests only run when files in `templates/` folder are changed
@@ -93,6 +93,23 @@ The test workflow runs on:
 - Deployment only proceeds if tests pass or are skipped
 
 **Example:** If you modify `templates/databases/postgresql/Rediaccfile`, only the PostgreSQL template will be tested (~30s) instead of all templates (~30min).
+
+**Manual Workflow Dispatch:**
+
+You can manually trigger the workflow from GitHub Actions with options:
+
+1. **Test All Templates** - Run all 29 templates (~30 minutes)
+   - Go to Actions → "Test and Deploy Template Catalog" → Run workflow
+   - Select "Test scope: all"
+
+2. **Test Specific Template** - Run a single template (~30 seconds)
+   - Go to Actions → "Test and Deploy Template Catalog" → Run workflow
+   - Select "Test scope: specific"
+   - Enter template path (e.g., `databases/postgresql`)
+
+3. **Skip Tests** - Only deploy without testing
+   - Go to Actions → "Test and Deploy Template Catalog" → Run workflow
+   - Select "Test scope: skip"
 
 **Failed tests will:**
 - Block PR merges

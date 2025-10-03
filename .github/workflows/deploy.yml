@@ -6,6 +6,20 @@ on:
   pull_request:
     branches: [ main, master ]
   workflow_dispatch:
+    inputs:
+      test_scope:
+        description: 'Test scope'
+        required: true
+        type: choice
+        default: 'all'
+        options:
+          - all
+          - specific
+          - skip
+      template_path:
+        description: 'Template path (e.g., databases/postgresql) - only used when test_scope is "specific"'
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -21,12 +35,25 @@ jobs:
   changes:
     runs-on: ubuntu-latest
     outputs:
-      templates: ${{ steps.filter.outputs.templates }}
+      templates: ${{ steps.filter.outputs.templates || steps.manual.outputs.templates }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Handle manual workflow dispatch
+        id: manual
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          if [ "${{ inputs.test_scope }}" == "skip" ]; then
+            echo "templates=false" >> $GITHUB_OUTPUT
+            echo "⏭️ Manual trigger - skipping tests"
+          else
+            echo "templates=true" >> $GITHUB_OUTPUT
+            echo "✅ Manual trigger - tests will run"
+          fi
+
       - name: Check for template changes
+        if: github.event_name != 'workflow_dispatch'
         uses: dorny/paths-filter@v3
         id: filter
         with:
@@ -35,6 +62,7 @@ jobs:
               - 'templates/**'
 
       - name: Show change detection result
+        if: github.event_name != 'workflow_dispatch'
         run: |
           if [ "${{ steps.filter.outputs.templates }}" == "true" ]; then
             echo "✅ Template changes detected - tests will run"
@@ -57,7 +85,27 @@ jobs:
       - name: Detect changed templates
         id: detect
         run: |
-          # Get changed files in templates/ directory
+          # Handle manual workflow dispatch
+          if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
+            if [ "${{ inputs.test_scope }}" == "all" ]; then
+              echo "🔧 Manual trigger - testing ALL templates"
+              echo "templates=" >> $GITHUB_OUTPUT
+              echo "count=all" >> $GITHUB_OUTPUT
+              exit 0
+            elif [ "${{ inputs.test_scope }}" == "specific" ]; then
+              TEMPLATE_PATH="${{ inputs.template_path }}"
+              if [ -z "$TEMPLATE_PATH" ]; then
+                echo "❌ Error: template_path is required when test_scope is 'specific'"
+                exit 1
+              fi
+              echo "🔧 Manual trigger - testing specific template: $TEMPLATE_PATH"
+              echo "templates=$TEMPLATE_PATH" >> $GITHUB_OUTPUT
+              echo "count=1" >> $GITHUB_OUTPUT
+              exit 0
+            fi
+          fi
+
+          # Auto-detect changed templates for PR/push
           if [ "${{ github.event_name }}" == "pull_request" ]; then
             BASE_SHA="${{ github.event.pull_request.base.sha }}"
             HEAD_SHA="${{ github.event.pull_request.head.sha }}"
@@ -112,17 +160,23 @@ jobs:
         run: |
           chmod +x ./test-templates.sh
 
-          # Build test command with specific templates
-          TEST_CMD="./test-templates.sh --verbose"
+          # Check if testing all templates
+          if [ "${{ steps.detect.outputs.count }}" == "all" ]; then
+            echo "🔧 Testing ALL templates"
+            ./test-templates.sh --verbose
+          else
+            # Build test command with specific templates
+            TEST_CMD="./test-templates.sh --verbose"
 
-          while IFS= read -r template; do
-            if [ -n "$template" ]; then
-              TEST_CMD="$TEST_CMD --template $template"
-            fi
-          done <<< "${{ steps.detect.outputs.templates }}"
+            while IFS= read -r template; do
+              if [ -n "$template" ]; then
+                TEST_CMD="$TEST_CMD --template $template"
+              fi
+            done <<< "${{ steps.detect.outputs.templates }}"
 
-          echo "Running: $TEST_CMD"
-          eval $TEST_CMD
+            echo "Running: $TEST_CMD"
+            eval $TEST_CMD
+          fi
         continue-on-error: true
 
       - name: Check disk space after tests
