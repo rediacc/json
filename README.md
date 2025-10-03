@@ -25,10 +25,12 @@ This repository automatically deploys to GitHub Pages via GitHub Actions.
 
 All templates are automatically tested in CI via GitHub Actions. The test script validates each template's lifecycle:
 
-1. **prep()** - Verifies image pulls and directory creation
-2. **up()** - Starts services with docker compose
-3. **Health Checks** - Monitors container health (if defined)
-4. **down()** - Stops services and cleans up volumes
+1. **prep()** - Verifies image pulls and directory creation (4 minute timeout)
+2. **up()** - Starts services with docker compose (4 minute timeout)
+3. **Health Checks** - Monitors container health (2 minute timeout if defined)
+4. **down()** - Stops services and cleans up volumes (4 minute timeout)
+
+Functions that timeout will be reported with specific timeout errors.
 
 ### Running Tests Locally
 

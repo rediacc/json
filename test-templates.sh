@@ -18,7 +18,7 @@
 set -euo pipefail
 
 # Configuration
-TEST_TIMEOUT=${TEST_TIMEOUT:-300}
+TEST_TIMEOUT=${TEST_TIMEOUT:-240}  # 4 minutes max per function
 HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:-120}
 RESULTS_FILE=${RESULTS_FILE:-test-results.json}
 VERBOSE=${VERBOSE:-0}
@@ -61,7 +61,7 @@ START_TIME=$(date +%s)
 print_color() {
     local color=$1
     shift
-    echo -e "${color}$*${NC}"
+    echo -e "${color}$*${NC}" >&2
 }
 
 log_info() {
@@ -104,7 +104,7 @@ Options:
   --help                Show this help message
 
 Environment Variables:
-  TEST_TIMEOUT              Max time per template in seconds (default: 300)
+  TEST_TIMEOUT              Max time per function in seconds (default: 240)
   HEALTH_CHECK_TIMEOUT      Max wait for health checks in seconds (default: 120)
   RESULTS_FILE              Output file for JSON results
   VERBOSE                   Set to 1 for detailed output
@@ -161,16 +161,14 @@ discover_templates() {
             log_verbose "Skipping template: $relative_path"
             ((SKIPPED_TESTS++)) || true
         fi
-    done < <(find "$TEMPLATES_DIR" -name "Rediaccfile" -type f -print0 | sort -z)
+    done < <(find "$TEMPLATES_DIR" -name "Rediaccfile" -type f -print0 2>/dev/null | sort -z)
 
-    TOTAL_TESTS=${#templates[@]}
-
-    if [[ $TOTAL_TESTS -eq 0 ]]; then
+    if [[ ${#templates[@]} -eq 0 ]]; then
         log_error "No templates found matching criteria"
         exit 1
     fi
 
-    log_info "Found $TOTAL_TESTS templates to test"
+    log_info "Found ${#templates[@]} templates to test"
 
     printf '%s\n' "${templates[@]}"
 }
@@ -205,27 +203,45 @@ check_health() {
         # Wait for health checks to pass
         while [[ $elapsed -lt $timeout ]]; do
             local unhealthy=0
+            local container_count=0
 
-            # Check container status using docker compose ps
-            while IFS= read -r line; do
-                local status=$(echo "$line" | awk '{print $2}')
-                local health=$(echo "$line" | awk '{print $3}')
+            # Check container status using docker compose ps with JSON format
+            local ps_output=$(docker compose ps --format json 2>/dev/null)
 
-                if [[ "$status" != "running" ]]; then
-                    log_verbose "Container not running: $line"
+            if [[ -z "$ps_output" ]]; then
+                log_verbose "No containers found"
+                return 1
+            fi
+
+            while IFS= read -r container_json; do
+                ((container_count++)) || true
+
+                local name=$(echo "$container_json" | jq -r '.Name')
+                local status=$(echo "$container_json" | jq -r '.Status')
+                local health=$(echo "$container_json" | jq -r '.Health // empty')
+
+                # Check if container is not running (status should start with "Up")
+                if [[ ! "$status" =~ ^Up ]]; then
+                    log_verbose "Container not up: $name ($status)"
                     unhealthy=1
                     break
                 fi
 
-                if [[ "$health" == "starting" ]] || [[ "$health" == "unhealthy" ]]; then
-                    log_verbose "Container health: $health"
+                # Check health status if health checks are defined
+                if [[ -n "$health" ]] && [[ "$health" != "healthy" ]]; then
+                    log_verbose "Container health not ready: $name ($health)"
                     unhealthy=1
                     break
                 fi
-            done < <(docker compose ps --format "table {{.Name}}\t{{.Status}}\t{{.Health}}" 2>/dev/null | tail -n +2)
+            done < <(echo "$ps_output" | jq -c '.')
+
+            if [[ $container_count -eq 0 ]]; then
+                log_verbose "No containers found"
+                return 1
+            fi
 
             if [[ $unhealthy -eq 0 ]]; then
-                log_verbose "All containers healthy"
+                log_verbose "All containers healthy ($container_count container(s))"
                 return 0
             fi
 
@@ -378,14 +394,21 @@ test_template() {
     # Test prep function
     local prep_start=$(date +%s)
     log_verbose "Running prep()"
-    if timeout "$TEST_TIMEOUT" bash -c "prep" >/dev/null 2>&1; then
+    if timeout "$TEST_TIMEOUT" bash -c 'source ./Rediaccfile && prep' >/dev/null 2>&1; then
         local prep_duration=$(($(date +%s) - prep_start))
         log_verbose "prep() passed (${prep_duration}s)"
         result+=',"prep":{"status":"passed","duration":"'"${prep_duration}s"'"}'
     else
+        local prep_exit_code=$?
         local prep_duration=$(($(date +%s) - prep_start))
-        log_error "prep() failed"
-        result+=',"prep":{"status":"failed","duration":"'"${prep_duration}s"'","error":"prep function failed"}'
+        local prep_error="prep function failed"
+        if [[ $prep_exit_code -eq 124 ]]; then
+            prep_error="prep function timed out after ${TEST_TIMEOUT}s"
+            log_error "prep() timed out"
+        else
+            log_error "prep() failed with exit code $prep_exit_code"
+        fi
+        result+=',"prep":{"status":"failed","duration":"'"${prep_duration}s"'","error":"'"$prep_error"'"}'
         overall_status="failed"
         error_msg="prep() failed"
     fi
@@ -394,14 +417,21 @@ test_template() {
     if [[ "$overall_status" == "passed" ]] || [[ $CONTINUE_ON_ERROR -eq 1 ]]; then
         local up_start=$(date +%s)
         log_verbose "Running up()"
-        if timeout "$TEST_TIMEOUT" bash -c "up" >/dev/null 2>&1; then
+        if timeout "$TEST_TIMEOUT" bash -c 'source ./Rediaccfile && up' >/dev/null 2>&1; then
             local up_duration=$(($(date +%s) - up_start))
             log_verbose "up() passed (${up_duration}s)"
             result+=',"up":{"status":"passed","duration":"'"${up_duration}s"'"}'
         else
+            local up_exit_code=$?
             local up_duration=$(($(date +%s) - up_start))
-            log_error "up() failed"
-            result+=',"up":{"status":"failed","duration":"'"${up_duration}s"'","error":"up function failed"}'
+            local up_error="up function failed"
+            if [[ $up_exit_code -eq 124 ]]; then
+                up_error="up function timed out after ${TEST_TIMEOUT}s"
+                log_error "up() timed out"
+            else
+                log_error "up() failed with exit code $up_exit_code"
+            fi
+            result+=',"up":{"status":"failed","duration":"'"${up_duration}s"'","error":"'"$up_error"'"}'
             overall_status="failed"
             error_msg="up() failed"
         fi
@@ -426,14 +456,21 @@ test_template() {
         # Always try to run down() for cleanup
         local down_start=$(date +%s)
         log_verbose "Running down()"
-        if timeout "$TEST_TIMEOUT" bash -c "down" >/dev/null 2>&1; then
+        if timeout "$TEST_TIMEOUT" bash -c 'source ./Rediaccfile && down' >/dev/null 2>&1; then
             local down_duration=$(($(date +%s) - down_start))
             log_verbose "down() passed (${down_duration}s)"
             result+=',"down":{"status":"passed","duration":"'"${down_duration}s"'"}'
         else
+            local down_exit_code=$?
             local down_duration=$(($(date +%s) - down_start))
-            log_error "down() failed"
-            result+=',"down":{"status":"failed","duration":"'"${down_duration}s"'","error":"down function failed"}'
+            local down_error="down function failed"
+            if [[ $down_exit_code -eq 124 ]]; then
+                down_error="down function timed out after ${TEST_TIMEOUT}s"
+                log_error "down() timed out"
+            else
+                log_error "down() failed with exit code $down_exit_code"
+            fi
+            result+=',"down":{"status":"failed","duration":"'"${down_duration}s"'","error":"'"$down_error"'"}'
             overall_status="failed"
             if [[ -z "$error_msg" ]]; then
                 error_msg="down() failed"
@@ -543,17 +580,17 @@ print_summary() {
         duration_formatted="${minutes}m${seconds}s"
     fi
 
-    echo ""
-    echo "=========================================="
-    echo "          TEST SUMMARY"
-    echo "=========================================="
-    echo "Total tests:    $TOTAL_TESTS"
+    echo "" >&2
+    echo "==========================================" >&2
+    echo "          TEST SUMMARY" >&2
+    echo "==========================================" >&2
+    echo "Total tests:    $TOTAL_TESTS" >&2
     print_color "$GREEN" "Passed:         $PASSED_TESTS"
     print_color "$RED" "Failed:         $FAILED_TESTS"
     print_color "$YELLOW" "Skipped:        $SKIPPED_TESTS"
-    echo "Duration:       $duration_formatted"
-    echo "=========================================="
-    echo ""
+    echo "Duration:       $duration_formatted" >&2
+    echo "==========================================" >&2
+    echo "" >&2
 
     if [[ $FAILED_TESTS -gt 0 ]]; then
         print_color "$RED" "Some tests failed. Check $RESULTS_FILE for details."
@@ -626,11 +663,12 @@ main() {
 
     # Discover templates
     mapfile -t templates < <(discover_templates)
+    TOTAL_TESTS=${#templates[@]}
 
     # Test each template
     for template in "${templates[@]}"; do
         test_template "$template"
-        echo ""
+        echo "" >&2
     done
 
     # Generate report
