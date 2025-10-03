@@ -42,6 +42,9 @@ I need you to create a new Rediacc template based on the following project:
    - ❌ Never use named volumes
    - ✅ Override anonymous volumes with tmpfs if needed
    - ✅ Use `docker compose down -v` in down() function
+   - ✅ **NO fixed host port mappings** - Use container-only ports
+     - ✅ Good: `ports: - "5432"` (Docker assigns random host port)
+     - ❌ Bad: `ports: - "5432:5432"` or `- "${PORT}:5432"` (conflicts when cloning)
    - ✅ Include proper health checks where applicable
    - ✅ Document all required ports and dependencies
    - ✅ Provide clear setup instructions

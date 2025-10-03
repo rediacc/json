@@ -156,12 +156,34 @@ down() {
 }
 ```
 
+### Port Mapping Best Practices
+
+**Critical:** Never use fixed host port mappings to allow repository cloning without conflicts.
+
+```yaml
+# ✅ GOOD - Container-only port (Docker assigns random host port)
+services:
+  db:
+    ports:
+      - "5432"  # Docker will map to random available host port
+
+# ❌ BAD - Fixed host port (conflicts when cloning repos)
+services:
+  db:
+    ports:
+      - "5432:5432"      # Hard-coded host port
+      - "${PORT}:5432"   # Environment variable still causes conflicts
+```
+
+**Why:** When repositories are cloned on the same machine, fixed host ports would conflict. Docker's automatic port assignment ensures each clone gets unique ports.
+
 ### Quick Checklist
 
 - [ ] All volumes use relative paths (`./data`, `./config`, etc.)
 - [ ] No `volumes:` section at root level of docker-compose.yaml
 - [ ] Images with built-in VOLUMEs explicitly override them with tmpfs or bind mounts
 - [ ] `down()` function uses `docker compose down -v`
+- [ ] Port mappings use container-only format (`"5432"` not `"5432:5432"`)
 - [ ] Test with volume detection: warning should NOT appear
 
 ### Testing Your Template
