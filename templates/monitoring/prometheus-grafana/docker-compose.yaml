@@ -11,7 +11,7 @@ services:
       - --web.enable-lifecycle
       - --storage.tsdb.retention.time=${PROMETHEUS_RETENTION}
     ports:
-      - ${PROMETHEUS_PORT}:9090
+      - "9090"
     volumes:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - ./prometheus/data:/prometheus
@@ -28,7 +28,7 @@ services:
       GF_USERS_ALLOW_SIGN_UP: ${GRAFANA_ALLOW_SIGN_UP}
       GF_INSTALL_PLUGINS: ${GRAFANA_PLUGINS}
     ports:
-      - ${GRAFANA_PORT}:3000
+      - "3000"
     volumes:
       - ./grafana/data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -47,7 +47,7 @@ services:
       - --path.rootfs=/host
       - --collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)
     ports:
-      - ${NODE_EXPORTER_PORT}:9100
+      - "9100"
     volumes:
       - /proc:/host/proc:ro
       - /sys:/host/sys:ro

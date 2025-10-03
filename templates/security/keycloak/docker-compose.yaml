@@ -31,7 +31,6 @@ services:
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
       KC_HOSTNAME: ${KC_HOSTNAME}
-      KC_HOSTNAME_PORT: ${KEYCLOAK_PORT}
       KC_HOSTNAME_STRICT: ${KC_HOSTNAME_STRICT}
       KC_HOSTNAME_STRICT_HTTPS: ${KC_HOSTNAME_STRICT_HTTPS}
       KC_HTTP_ENABLED: ${KC_HTTP_ENABLED}
@@ -42,8 +41,8 @@ services:
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KC_PROXY: ${KC_PROXY}
     ports:
-      - ${KEYCLOAK_PORT}:8080
-      - ${KEYCLOAK_HTTPS_PORT}:8443
+      - "8080"
+      - "8443"
     depends_on:
       postgres:
         condition: service_healthy
