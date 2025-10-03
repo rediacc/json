@@ -51,30 +51,88 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Detect changed templates
+        id: detect
+        run: |
+          # Get changed files in templates/ directory
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            BASE_SHA="${{ github.event.pull_request.base.sha }}"
+            HEAD_SHA="${{ github.event.pull_request.head.sha }}"
+          else
+            BASE_SHA="${{ github.event.before }}"
+            HEAD_SHA="${{ github.sha }}"
+          fi
+
+          # Get changed files
+          CHANGED_FILES=$(git diff --name-only $BASE_SHA $HEAD_SHA -- templates/ || echo "")
+
+          if [ -z "$CHANGED_FILES" ]; then
+            echo "No template files changed"
+            echo "templates=" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Extract unique template directories (format: category/template)
+          TEMPLATES=$(echo "$CHANGED_FILES" | \
+            grep -E '^templates/[^/]+/[^/]+/' | \
+            sed 's|^templates/\([^/]*/[^/]*\)/.*|\1|' | \
+            sort -u)
+
+          if [ -z "$TEMPLATES" ]; then
+            echo "No specific templates changed"
+            echo "templates=" >> $GITHUB_OUTPUT
+            echo "count=0" >> $GITHUB_OUTPUT
+          else
+            TEMPLATE_COUNT=$(echo "$TEMPLATES" | wc -l)
+            echo "Changed templates:"
+            echo "$TEMPLATES"
+            echo "templates<<EOF" >> $GITHUB_OUTPUT
+            echo "$TEMPLATES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+            echo "count=$TEMPLATE_COUNT" >> $GITHUB_OUTPUT
+          fi
 
       - name: Set up Docker Buildx
+        if: steps.detect.outputs.count != '0'
         uses: docker/setup-buildx-action@v3
 
       - name: Check disk space before tests
+        if: steps.detect.outputs.count != '0'
         run: |
           echo "Disk space before tests:"
           df -h
 
       - name: Run template tests
         id: test
+        if: steps.detect.outputs.count != '0'
         run: |
           chmod +x ./test-templates.sh
-          ./test-templates.sh --verbose
+
+          # Build test command with specific templates
+          TEST_CMD="./test-templates.sh --verbose"
+
+          while IFS= read -r template; do
+            if [ -n "$template" ]; then
+              TEST_CMD="$TEST_CMD --template $template"
+            fi
+          done <<< "${{ steps.detect.outputs.templates }}"
+
+          echo "Running: $TEST_CMD"
+          eval $TEST_CMD
         continue-on-error: true
 
       - name: Check disk space after tests
-        if: always()
+        if: always() && steps.detect.outputs.count != '0'
         run: |
           echo "Disk space after tests:"
           df -h
 
       - name: Upload test results
-        if: always()
+        if: always() && steps.detect.outputs.count != '0'
         uses: actions/upload-artifact@v4
         with:
           name: test-results
@@ -82,7 +140,7 @@ jobs:
           retention-days: 30
 
       - name: Display test summary
-        if: always()
+        if: always() && steps.detect.outputs.count != '0'
         run: |
           if [ -f test-results.json ]; then
             echo "## Template Test Summary" >> $GITHUB_STEP_SUMMARY
@@ -113,7 +171,7 @@ jobs:
           fi
 
       - name: Comment on PR
-        if: github.event_name == 'pull_request' && always()
+        if: github.event_name == 'pull_request' && always() && steps.detect.outputs.count != '0'
         uses: actions/github-script@v7
         with:
           script: |
@@ -180,7 +238,7 @@ jobs:
             }
 
       - name: Fail if tests failed
-        if: always()
+        if: always() && steps.detect.outputs.count != '0'
         run: |
           if [ -f test-results.json ]; then
             failed=$(jq -r '.summary.failed' test-results.json)

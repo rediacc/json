@@ -88,8 +88,11 @@ The test workflow runs on:
 
 **Smart Testing:**
 - Tests only run when files in `templates/` folder are changed
-- Other changes (docs, workflows, etc.) skip tests
+- Only changed templates are tested (not all 29 templates)
+- Other changes (docs, workflows, etc.) skip tests entirely
 - Deployment only proceeds if tests pass or are skipped
+
+**Example:** If you modify `templates/databases/postgresql/Rediaccfile`, only the PostgreSQL template will be tested (~30s) instead of all templates (~30min).
 
 **Failed tests will:**
 - Block PR merges
