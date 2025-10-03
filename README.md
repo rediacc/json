@@ -86,8 +86,14 @@ The test workflow runs on:
 - Pushes to main/master
 - Manual workflow dispatch
 
-Failed tests will:
+**Smart Testing:**
+- Tests only run when files in `templates/` folder are changed
+- Other changes (docs, workflows, etc.) skip tests
+- Deployment only proceeds if tests pass or are skipped
+
+**Failed tests will:**
 - Block PR merges
+- Prevent deployment to GitHub Pages
 - Post detailed results as PR comments
 - Upload test results as artifacts
 

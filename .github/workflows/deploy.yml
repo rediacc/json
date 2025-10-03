@@ -18,9 +18,35 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  changes:
+    runs-on: ubuntu-latest
+    outputs:
+      templates: ${{ steps.filter.outputs.templates }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Check for template changes
+        uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            templates:
+              - 'templates/**'
+
+      - name: Show change detection result
+        run: |
+          if [ "${{ steps.filter.outputs.templates }}" == "true" ]; then
+            echo "✅ Template changes detected - tests will run"
+          else
+            echo "⏭️ No template changes detected - tests will be skipped"
+          fi
+
   test:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    needs: changes
+    if: needs.changes.outputs.templates == 'true'
 
     steps:
       - name: Checkout
@@ -166,8 +192,12 @@ jobs:
 
   build:
     runs-on: ubuntu-latest
-    needs: test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    needs: [changes, test]
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master') &&
+      (needs.changes.outputs.templates == 'false' || needs.test.result == 'success')
 
     steps:
       - name: Checkout
