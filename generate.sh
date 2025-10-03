@@ -406,6 +406,12 @@ generate_website() {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Template Catalog</title>
+
+    <!-- Markdown and Syntax Highlighting Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/vs2015.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; }
@@ -432,7 +438,7 @@ generate_website() {
         .template-files { background: #ecf0f1; color: #7f8c8d; padding: 4px 8px; border-radius: 15px; font-size: 0.8rem; }
         .template-description { color: #7f8c8d; line-height: 1.5; }
         .template-actions { padding: 20px; background: #f8f9fa; }
-        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background 0.2s; }
+        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background 0.2s; cursor: pointer; border: none; }
         .btn:hover { background: #2980b9; }
         .btn-secondary { background: #95a5a6; }
         .btn-secondary:hover { background: #7f8c8d; }
@@ -441,6 +447,428 @@ generate_website() {
         .api-title { font-size: 1.5rem; color: #2c3e50; margin-bottom: 20px; }
         .endpoint { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; font-family: 'Monaco', 'Menlo', monospace; }
         .method { background: #27ae60; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; margin-right: 10px; }
+
+        /* Modal Styles */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(4px);
+            z-index: 1000;
+            animation: fadeIn 0.2s ease-in-out;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-container {
+            background: white;
+            border-radius: 12px;
+            max-width: 1400px;
+            width: 100%;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            animation: slideUp 0.3s ease-out;
+        }
+
+        .modal-header {
+            padding: 25px 30px;
+            border-bottom: 1px solid #e0e6ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header-content {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .modal-icon {
+            font-size: 2.5rem;
+        }
+
+        .modal-title-group h2 {
+            color: #2c3e50;
+            font-size: 1.8rem;
+            margin-bottom: 5px;
+        }
+
+        .modal-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .modal-tag {
+            background: #3498db;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 15px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 2rem;
+            color: #7f8c8d;
+            cursor: pointer;
+            padding: 5px 10px;
+            transition: color 0.2s;
+        }
+
+        .modal-close:hover {
+            color: #2c3e50;
+        }
+
+        .modal-tabs {
+            display: flex;
+            padding: 0 30px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e0e6ed;
+        }
+
+        .modal-tab {
+            padding: 15px 25px;
+            background: none;
+            border: none;
+            color: #7f8c8d;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .modal-tab:hover {
+            color: #2c3e50;
+        }
+
+        .modal-tab.active {
+            color: #3498db;
+        }
+
+        .modal-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #3498db;
+        }
+
+        .modal-body {
+            flex: 1;
+            overflow-y: auto;
+            padding: 30px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Overview Tab */
+        .overview-content {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 30px;
+        }
+
+        .readme-section, .features-section {
+            background: #f8f9fa;
+            padding: 25px;
+            border-radius: 10px;
+        }
+
+        .section-title {
+            font-size: 1.3rem;
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        .readme-content {
+            color: #333;
+            line-height: 1.8;
+        }
+
+        .readme-content h1 { font-size: 1.8rem; margin: 20px 0 10px; color: #2c3e50; }
+        .readme-content h2 { font-size: 1.5rem; margin: 18px 0 10px; color: #2c3e50; }
+        .readme-content h3 { font-size: 1.3rem; margin: 15px 0 8px; color: #34495e; }
+        .readme-content p { margin: 10px 0; }
+        .readme-content ul, .readme-content ol { margin: 10px 0 10px 25px; }
+        .readme-content li { margin: 5px 0; }
+        .readme-content code { background: #2c3e50; color: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+        .readme-content pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 15px 0; }
+        .readme-content pre code { background: none; padding: 0; }
+        .readme-content blockquote { border-left: 4px solid #3498db; padding-left: 15px; margin: 15px 0; color: #555; }
+
+        .feature-list {
+            list-style: none;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            color: #555;
+        }
+
+        .feature-icon {
+            color: #27ae60;
+            font-size: 1.2rem;
+        }
+
+        /* Files Tab */
+        .files-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 20px;
+            height: 500px;
+        }
+
+        .file-list {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow-y: auto;
+        }
+
+        .file-list-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e6ed;
+            font-weight: 600;
+            color: #2c3e50;
+            position: sticky;
+            top: 0;
+            background: #f8f9fa;
+        }
+
+        .file-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-left: 3px solid transparent;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .file-item:hover {
+            background: #e8ecef;
+        }
+
+        .file-item.active {
+            background: rgba(52, 152, 219, 0.1);
+            border-left-color: #3498db;
+            color: #3498db;
+            font-weight: 500;
+        }
+
+        .file-icon {
+            font-size: 1.1rem;
+        }
+
+        .file-viewer {
+            background: #f8f9fa;
+            border-radius: 10px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .file-viewer-header {
+            padding: 15px;
+            border-bottom: 1px solid #e0e6ed;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            color: #555;
+            background: #fff;
+            font-weight: 500;
+        }
+
+        .file-viewer-content {
+            flex: 1;
+            overflow: auto;
+            background: #1e1e1e;
+        }
+
+        .file-viewer-content pre {
+            margin: 0;
+            padding: 20px;
+        }
+
+        .file-viewer-content code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        /* Security Tab */
+        .security-content {
+            max-width: 900px;
+        }
+
+        .security-alert {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 20px;
+            border-radius: 5px;
+            margin-bottom: 30px;
+        }
+
+        .security-alert-title {
+            font-weight: 600;
+            color: #1976d2;
+            margin-bottom: 8px;
+            font-size: 1.1rem;
+        }
+
+        .security-alert-desc {
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .security-section {
+            margin-bottom: 30px;
+        }
+
+        .security-section h3 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+
+        .security-section ul {
+            list-style: none;
+            padding-left: 0;
+        }
+
+        .security-section li {
+            padding: 10px 0;
+            padding-left: 30px;
+            position: relative;
+            color: #555;
+            line-height: 1.6;
+        }
+
+        .security-section li::before {
+            content: '✓';
+            position: absolute;
+            left: 0;
+            color: #27ae60;
+            font-weight: bold;
+            font-size: 1.2rem;
+        }
+
+        /* Loading State */
+        .loading-spinner {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            color: #7f8c8d;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 20px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .overview-content {
+                grid-template-columns: 1fr;
+            }
+
+            .files-content {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+
+            .file-list {
+                max-height: 200px;
+            }
+
+            .file-viewer {
+                min-height: 400px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .modal-container {
+                max-height: 95vh;
+                margin: 10px;
+            }
+
+            .modal-header {
+                padding: 20px;
+            }
+
+            .modal-header-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .modal-body {
+                padding: 20px;
+            }
+
+            .modal-tabs {
+                overflow-x: auto;
+                padding: 0 20px;
+            }
+
+            .modal-tab {
+                padding: 12px 15px;
+                font-size: 0.9rem;
+            }
+        }
     </style>
 </head>
 <body>
@@ -501,9 +929,117 @@ generate_website() {
         </div>
     </div>
 
+    <!-- Template Details Modal -->
+    <div class="modal-overlay" id="template-modal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <div class="modal-header-content">
+                    <div class="modal-icon">📦</div>
+                    <div class="modal-title-group">
+                        <h2 id="modal-template-name">Template Name</h2>
+                        <div class="modal-tags" id="modal-tags"></div>
+                    </div>
+                </div>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+
+            <div class="modal-tabs">
+                <button class="modal-tab active" data-tab="overview" onclick="switchTab('overview')">
+                    📄 Overview
+                </button>
+                <button class="modal-tab" data-tab="files" onclick="switchTab('files')">
+                    📁 Files
+                </button>
+                <button class="modal-tab" data-tab="security" onclick="switchTab('security')">
+                    🔒 Security
+                </button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Overview Tab -->
+                <div class="tab-content active" id="tab-overview">
+                    <div class="overview-content">
+                        <div class="readme-section">
+                            <h3 class="section-title">Description</h3>
+                            <div class="readme-content" id="readme-content">
+                                Loading...
+                            </div>
+                        </div>
+                        <div class="features-section">
+                            <h3 class="section-title">Features</h3>
+                            <ul class="feature-list" id="features-list"></ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Files Tab -->
+                <div class="tab-content" id="tab-files">
+                    <div class="files-content">
+                        <div class="file-list">
+                            <div class="file-list-header">Files</div>
+                            <div id="file-list-items"></div>
+                        </div>
+                        <div class="file-viewer">
+                            <div class="file-viewer-header" id="current-file-name">Select a file</div>
+                            <div class="file-viewer-content" id="file-content">
+                                <pre><code>Select a file to view its contents</code></pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-content" id="tab-security">
+                    <div class="security-content">
+                        <div class="security-alert">
+                            <div class="security-alert-title">Security Review</div>
+                            <div class="security-alert-desc">
+                                Please review the template files for security considerations before deployment.
+                                Always verify configurations and credentials are properly secured.
+                            </div>
+                        </div>
+
+                        <div class="security-section">
+                            <h3>Best Practices</h3>
+                            <ul>
+                                <li>Review all configuration files before deployment</li>
+                                <li>Update default passwords and credentials immediately</li>
+                                <li>Ensure proper network security configuration</li>
+                                <li>Keep software components up to date with security patches</li>
+                                <li>Use environment variables for sensitive data</li>
+                                <li>Enable SSL/TLS for production deployments</li>
+                            </ul>
+                        </div>
+
+                        <div class="security-section">
+                            <h3>Container Security</h3>
+                            <ul>
+                                <li>Always review container configurations</li>
+                                <li>Use official images from trusted sources</li>
+                                <li>Implement proper access controls</li>
+                                <li>Regular security audits and updates</li>
+                                <li>Monitor container logs for suspicious activity</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script>
         let allTemplates = [];
         let filteredTemplates = [];
+        let currentTemplate = null;
+        let selectedFileIndex = 0;
+
+        // Initialize marked and highlight.js
+        if (typeof marked !== 'undefined') {
+            marked.setOptions({
+                breaks: true,
+                gfm: true
+            });
+        }
 
         // Load templates data
         fetch('templates.json')
@@ -559,7 +1095,7 @@ generate_website() {
                     </div>
                     <div class="template-actions">
                         <a href="${template.download_url}" class="btn">Download JSON</a>
-                        <a href="#" onclick="viewTemplate('${template.id}')" class="btn btn-secondary">View Details</a>
+                        <button onclick="viewTemplate('${template.id}')" class="btn btn-secondary">View Details</button>
                     </div>
                 </div>
             `).join('');
@@ -598,14 +1134,201 @@ generate_website() {
         }
 
         function viewTemplate(templateId) {
-            // For now, just download the template JSON
-            // In a more advanced version, this could show a modal with details
-            window.open(`templates/${templateId}.json`, '_blank');
+            // Show loading state
+            const modal = document.getElementById('template-modal');
+            const readmeContent = document.getElementById('readme-content');
+            const featuresList = document.getElementById('features-list');
+            const fileListItems = document.getElementById('file-list-items');
+
+            readmeContent.innerHTML = '<div class="loading-spinner"><div class="spinner"></div><p>Loading template details...</p></div>';
+            featuresList.innerHTML = '';
+            fileListItems.innerHTML = '';
+
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+
+            // Fetch template details
+            fetch(`templates/${templateId}.json`)
+                .then(response => response.json())
+                .then(data => {
+                    currentTemplate = data;
+                    selectedFileIndex = 0;
+
+                    // Update modal header
+                    document.getElementById('modal-template-name').textContent = data.name;
+
+                    // Update tags
+                    const tagsContainer = document.getElementById('modal-tags');
+                    tagsContainer.innerHTML = '';
+                    if (data.category) {
+                        const categoryTag = document.createElement('span');
+                        categoryTag.className = 'modal-tag';
+                        categoryTag.textContent = data.category;
+                        tagsContainer.appendChild(categoryTag);
+                    }
+                    if (data.tags && data.tags.length > 0) {
+                        data.tags.slice(0, 3).forEach(tag => {
+                            const tagEl = document.createElement('span');
+                            tagEl.className = 'modal-tag';
+                            tagEl.style.background = '#95a5a6';
+                            tagEl.textContent = tag;
+                            tagsContainer.appendChild(tagEl);
+                        });
+                    }
+
+                    // Render README
+                    if (data.readme && typeof marked !== 'undefined') {
+                        readmeContent.innerHTML = marked.parse(data.readme);
+                    } else {
+                        readmeContent.textContent = data.readme || 'No description available.';
+                    }
+
+                    // Render features/tags
+                    if (data.tags && data.tags.length > 0) {
+                        featuresList.innerHTML = data.tags.map(tag => `
+                            <li class="feature-item">
+                                <span class="feature-icon">✓</span>
+                                <span>${tag}</span>
+                            </li>
+                        `).join('');
+                    } else {
+                        featuresList.innerHTML = '<li class="feature-item"><span class="feature-icon">ℹ</span><span>No features listed</span></li>';
+                    }
+
+                    // Render file list
+                    if (data.files && data.files.length > 0) {
+                        fileListItems.innerHTML = data.files.map((file, index) => `
+                            <div class="file-item ${index === 0 ? 'active' : ''}" onclick="selectFile(${index})">
+                                <span class="file-icon">📄</span>
+                                <span>${file.path || file.name}</span>
+                            </div>
+                        `).join('');
+
+                        // Display first file by default
+                        selectFile(0);
+                    } else {
+                        fileListItems.innerHTML = '<div style="padding: 20px; text-align: center; color: #7f8c8d;">No files available</div>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading template:', error);
+                    readmeContent.innerHTML = '<p style="color: #e74c3c;">Failed to load template details. Please try again.</p>';
+                });
         }
+
+        function selectFile(index) {
+            if (!currentTemplate || !currentTemplate.files || !currentTemplate.files[index]) {
+                return;
+            }
+
+            selectedFileIndex = index;
+            const file = currentTemplate.files[index];
+
+            // Update active file in list
+            document.querySelectorAll('.file-item').forEach((item, i) => {
+                item.classList.toggle('active', i === index);
+            });
+
+            // Update file viewer header
+            document.getElementById('current-file-name').textContent = file.path || file.name;
+
+            // Update file content with syntax highlighting
+            const fileContent = document.getElementById('file-content');
+            const language = detectLanguage(file.name);
+
+            if (language === 'markdown' && typeof marked !== 'undefined') {
+                // Render markdown
+                fileContent.innerHTML = `<div style="padding: 20px; background: white; color: #333;">${marked.parse(file.content)}</div>`;
+            } else if (typeof hljs !== 'undefined') {
+                // Syntax highlighting
+                try {
+                    const highlighted = hljs.highlightAuto(file.content, [language]).value;
+                    fileContent.innerHTML = `<pre><code class="hljs">${highlighted}</code></pre>`;
+                } catch (e) {
+                    fileContent.innerHTML = `<pre><code>${escapeHtml(file.content)}</code></pre>`;
+                }
+            } else {
+                fileContent.innerHTML = `<pre><code>${escapeHtml(file.content)}</code></pre>`;
+            }
+        }
+
+        function detectLanguage(filename) {
+            const ext = filename.split('.').pop().toLowerCase();
+            const languageMap = {
+                'yaml': 'yaml',
+                'yml': 'yaml',
+                'json': 'json',
+                'sh': 'bash',
+                'bash': 'bash',
+                'env': 'bash',
+                'md': 'markdown',
+                'py': 'python',
+                'js': 'javascript',
+                'ts': 'typescript',
+                'jsx': 'javascript',
+                'tsx': 'typescript',
+                'html': 'html',
+                'css': 'css',
+                'sql': 'sql',
+                'xml': 'xml',
+                'conf': 'nginx',
+                'config': 'ini'
+            };
+            return languageMap[ext] || 'plaintext';
+        }
+
+        function escapeHtml(text) {
+            const map = {
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // Update tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('template-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentTemplate = null;
+            selectedFileIndex = 0;
+
+            // Reset to overview tab
+            switchTab('overview');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('template-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
     </script>
 </body>
 </html>
 EOF
+
 
     # Create _config.yml for GitHub Pages
     cat > "$BUILD_DIR/_config.yml" << 'EOF'
