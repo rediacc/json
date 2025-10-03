@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Rediacc Repository Template Catalog</title>
-    <!-- Build: 2025-10-03-13:00 -->
 
     <!-- Markdown and Syntax Highlighting Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
@@ -926,3 +925,48 @@
                 '&': '&amp;',
                 '<': '&lt;',
                 '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#039;'
+            };
+            return text.replace(/[&<>"']/g, m => map[m]);
+        }
+
+        function switchTab(tabName) {
+            // Update tab buttons
+            document.querySelectorAll('.modal-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.tab === tabName);
+            });
+
+            // Update tab contents
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.toggle('active', content.id === `tab-${tabName}`);
+            });
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('template-modal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            currentTemplate = null;
+            selectedFileIndex = 0;
+
+            // Reset to overview tab
+            switchTab('overview');
+        }
+
+        // Close modal on overlay click
+        document.getElementById('template-modal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // Close modal on ESC key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>
