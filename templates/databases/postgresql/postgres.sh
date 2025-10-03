@@ -190,4 +190,3 @@ create_custom_table() {
     pg_exec "SELECT * FROM $table_name LIMIT 5"
 }
 
-$@

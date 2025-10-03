@@ -19,6 +19,76 @@ Generates:
 
 This repository automatically deploys to GitHub Pages via GitHub Actions.
 
+## Testing Templates
+
+### Automated Testing
+
+All templates are automatically tested in CI via GitHub Actions. The test script validates each template's lifecycle:
+
+1. **prep()** - Verifies image pulls and directory creation
+2. **up()** - Starts services with docker compose
+3. **Health Checks** - Monitors container health (if defined)
+4. **down()** - Stops services and cleans up volumes
+
+### Running Tests Locally
+
+```bash
+# Test all templates
+./test-templates.sh
+
+# Test specific category
+./test-templates.sh --category databases
+
+# Test specific template
+./test-templates.sh --template databases/postgresql
+
+# Skip problematic templates
+./test-templates.sh --skip databases/mssql --skip databases/crate
+
+# Verbose output for debugging
+./test-templates.sh --verbose
+
+# Keep Docker images for debugging (don't cleanup)
+./test-templates.sh --no-cleanup
+```
+
+### Test Output
+
+Results are saved to `test-results.json` with detailed information:
+
+```json
+{
+  "summary": {
+    "total": 29,
+    "passed": 27,
+    "failed": 2,
+    "duration": "15m30s"
+  },
+  "results": [
+    {
+      "name": "databases/postgresql",
+      "prep": {"status": "passed", "duration": "5s"},
+      "up": {"status": "passed", "duration": "10s"},
+      "health": {"status": "passed", "duration": "15s"},
+      "down": {"status": "passed", "duration": "3s"},
+      "overall": "passed"
+    }
+  ]
+}
+```
+
+### CI Integration
+
+The test workflow runs on:
+- Pull requests to main/master
+- Pushes to main/master
+- Manual workflow dispatch
+
+Failed tests will:
+- Block PR merges
+- Post detailed results as PR comments
+- Upload test results as artifacts
+
 ---
 
 ## Template Structure

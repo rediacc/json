@@ -82,4 +82,3 @@ function down() {
     echo $tunnel_id is deleted
 }
 
-$@
