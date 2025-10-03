@@ -1,4 +1,4 @@
-name: Deploy Template Catalog to GitHub Pages
+name: Test and Deploy Template Catalog
 
 on:
   push:
@@ -11,14 +11,163 @@ permissions:
   contents: read
   pages: write
   id-token: write
+  pull-requests: write
 
 concurrency:
   group: "pages"
   cancel-in-progress: false
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Check disk space before tests
+        run: |
+          echo "Disk space before tests:"
+          df -h
+
+      - name: Run template tests
+        id: test
+        run: |
+          chmod +x ./test-templates.sh
+          ./test-templates.sh --verbose
+        continue-on-error: true
+
+      - name: Check disk space after tests
+        if: always()
+        run: |
+          echo "Disk space after tests:"
+          df -h
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test-results.json
+          retention-days: 30
+
+      - name: Display test summary
+        if: always()
+        run: |
+          if [ -f test-results.json ]; then
+            echo "## Template Test Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Extract summary using jq
+            total=$(jq -r '.summary.total' test-results.json)
+            passed=$(jq -r '.summary.passed' test-results.json)
+            failed=$(jq -r '.summary.failed' test-results.json)
+            skipped=$(jq -r '.summary.skipped' test-results.json)
+            duration=$(jq -r '.summary.duration' test-results.json)
+
+            echo "- **Total Tests:** $total" >> $GITHUB_STEP_SUMMARY
+            echo "- **Passed:** ✅ $passed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Failed:** ❌ $failed" >> $GITHUB_STEP_SUMMARY
+            echo "- **Skipped:** ⏭️ $skipped" >> $GITHUB_STEP_SUMMARY
+            echo "- **Duration:** ⏱️ $duration" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+
+            # Show failed tests if any
+            if [ "$failed" -gt 0 ]; then
+              echo "### Failed Templates" >> $GITHUB_STEP_SUMMARY
+              echo "" >> $GITHUB_STEP_SUMMARY
+              jq -r '.results[] | select(.overall=="failed") | "- `" + .name + "` - " + (.error // "Unknown error")' test-results.json >> $GITHUB_STEP_SUMMARY
+            fi
+          else
+            echo "⚠️ Test results file not found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Comment on PR
+        if: github.event_name == 'pull_request' && always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+
+            if (!fs.existsSync('test-results.json')) {
+              console.log('No test results found');
+              return;
+            }
+
+            const results = JSON.parse(fs.readFileSync('test-results.json', 'utf8'));
+            const { total, passed, failed, skipped, duration } = results.summary;
+
+            let body = '## 🧪 Template Test Results\n\n';
+            body += `| Metric | Value |\n`;
+            body += `|--------|-------|\n`;
+            body += `| Total Tests | ${total} |\n`;
+            body += `| ✅ Passed | ${passed} |\n`;
+            body += `| ❌ Failed | ${failed} |\n`;
+            body += `| ⏭️ Skipped | ${skipped} |\n`;
+            body += `| ⏱️ Duration | ${duration} |\n\n`;
+
+            if (failed > 0) {
+              body += '### Failed Templates\n\n';
+              const failedTests = results.results.filter(r => r.overall === 'failed');
+              failedTests.forEach(test => {
+                body += `- \`${test.name}\`: ${test.error || 'Unknown error'}\n`;
+              });
+              body += '\n';
+            }
+
+            body += '<details>\n<summary>View detailed results</summary>\n\n';
+            body += '```json\n' + JSON.stringify(results, null, 2) + '\n```\n';
+            body += '</details>\n';
+
+            // Find existing comment
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+            });
+
+            const botComment = comments.find(comment =>
+              comment.user.type === 'Bot' &&
+              comment.body.includes('Template Test Results')
+            );
+
+            if (botComment) {
+              // Update existing comment
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: botComment.id,
+                body: body
+              });
+            } else {
+              // Create new comment
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body: body
+              });
+            }
+
+      - name: Fail if tests failed
+        if: always()
+        run: |
+          if [ -f test-results.json ]; then
+            failed=$(jq -r '.summary.failed' test-results.json)
+            if [ "$failed" -gt 0 ]; then
+              echo "❌ $failed template(s) failed"
+              exit 1
+            fi
+          fi
+
   build:
     runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
 
     steps:
       - name: Checkout
@@ -54,6 +203,8 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     needs: build
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
