@@ -1210,7 +1210,9 @@ generate_website() {
                         tagsContainer.appendChild(categoryTag);
                     }
                     if (data.tags && data.tags.length > 0) {
-                        data.tags.slice(0, 3).forEach(tag => {
+                        // Filter out category from tags to avoid duplication
+                        const uniqueTags = data.tags.filter(tag => tag.toLowerCase() !== (data.category || '').toLowerCase());
+                        uniqueTags.slice(0, 3).forEach(tag => {
                             const tagEl = document.createElement('span');
                             tagEl.className = 'modal-tag';
                             tagEl.style.background = '#95a5a6';
