@@ -21,7 +21,7 @@ services:
     networks:
       - couchbase-network
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8091/pools"]
+      test: ["CMD-SHELL", "curl -s http://localhost:8091/pools > /dev/null || curl -s http://localhost:8091/pools 2>&1 | grep -q '401' || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 10

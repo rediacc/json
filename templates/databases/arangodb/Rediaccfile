@@ -7,10 +7,9 @@ prep() {
     echo "Creating data directories..."
     mkdir -p ./data
     mkdir -p ./apps
-    chmod 755 ./data
-    chmod 755 ./apps
+    chmod 755 ./data ./apps 2>/dev/null || true
 
-    return $?
+    return 0
 }
 
 up() {

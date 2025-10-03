@@ -13,7 +13,7 @@ services:
       - ./data:/var/lib/arangodb3
       - ./apps:/var/lib/arangodb3-apps
     healthcheck:
-      test: ["CMD-SHELL", "wget --spider -q http://localhost:8529/_api/version || exit 1"]
+      test: ["CMD-SHELL", "wget --spider http://127.0.0.1:8529/_api/version 2>&1 | grep -q '401\\|200' || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5

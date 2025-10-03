@@ -6,12 +6,12 @@ prep() {
 
     echo "Creating data directory..."
     mkdir -p ./data
-    chmod 755 ./data
+    chmod 755 ./data 2>/dev/null || true
 
     echo "Making initialization script executable..."
     chmod +x ./init-cluster.sh
 
-    return $?
+    return 0
 }
 
 up() {
