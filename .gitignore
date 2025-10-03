@@ -26,3 +26,33 @@ __pycache__/
 # Backup files
 *.bak
 *.backup
+
+# Template runtime data folders (created when templates are tested/run)
+templates/*/data/
+templates/*/config/
+templates/*/logs/
+templates/*/log/
+templates/*/plugins/
+templates/*/secrets/
+templates/*/databases/
+templates/*/db/
+templates/*/wordpress/
+templates/*/grafana/
+templates/*/prometheus/
+templates/*/*/data/
+templates/*/*/config/
+templates/*/*/logs/
+templates/*/*/log/
+templates/*/*/plugins/
+templates/*/*/init/
+templates/*/*/etc/
+templates/*/*/backup/
+templates/*/*/secrets/
+templates/*/*/databases/
+templates/*/*/db/
+templates/*/*/wordpress/
+templates/*/*/grafana/
+templates/*/*/prometheus/
+
+# Test results
+test-results.json
