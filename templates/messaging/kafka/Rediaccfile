@@ -35,7 +35,7 @@ up() {
 
 down() {
     echo "Stopping Kafka cluster..."
-    docker compose down
+    docker compose down -v
     return $?
 }
 

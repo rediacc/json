@@ -18,7 +18,7 @@ up() {
 
 down() {
     echo "Stopping Redis server..."
-    docker compose down
+    docker compose down -v
     return $?
 }
 

@@ -33,7 +33,7 @@ up() {
 
 down() {
     echo "Stopping Keycloak..."
-    docker compose down
+    docker compose down -v
     return $?
 }
 

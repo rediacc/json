@@ -46,7 +46,7 @@ up() {
 
 down() {
     echo "Stopping Kong API Gateway..."
-    docker compose down
+    docker compose down -v
     docker network rm kong-net 2>/dev/null || true
     return $?
 }

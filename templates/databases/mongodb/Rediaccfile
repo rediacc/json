@@ -24,7 +24,7 @@ up() {
 
 down() {
     echo "Stopping MongoDB server..."
-    docker compose down
+    docker compose down -v
     return $?
 }
 

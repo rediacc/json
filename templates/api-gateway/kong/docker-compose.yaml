@@ -10,6 +10,8 @@ services:
       PGDATA: /pgdata
     volumes:
       - ./data:/pgdata
+    tmpfs:
+      - /var/lib/postgresql
     networks:
       - kong-net
     healthcheck:

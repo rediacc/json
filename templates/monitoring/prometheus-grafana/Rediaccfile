@@ -34,7 +34,7 @@ up() {
 
 down() {
     echo "Stopping Prometheus and Grafana..."
-    docker compose down
+    docker compose down -v
     return $?
 }
 
