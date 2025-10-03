@@ -4,28 +4,28 @@ Minimal Nginx web server deployment.
 
 ## Features
 - Latest Nginx stable release
-- Quick deployment with single command
-- Port 80 exposed for HTTP traffic
+- Single command deployment
+- Lightweight and fast HTTP server
+- Auto-cleanup on container stop
 
 ## Usage
 ```bash
 source Rediaccfile
+prep  # Pull Nginx image
 up    # Start Nginx server
-down  # Stop Nginx server
+down  # Stop and cleanup
 ```
 
 ## Configuration
-- HTTP Port: 80
-- Runs in detached mode
-- Auto-removes container on stop
+This template uses a minimal configuration:
+- **Port**: 80 (Docker auto-assigns host port)
+- **Container**: Runs in detached mode with auto-removal
 
 ## Access
-Open http://localhost in your browser to see the default Nginx welcome page.
+- **Port**: 80 (Docker auto-assigns host port)
+- **Find assigned port**: `docker ps | grep rediacc-nginx`
+- **Default page**: Access via `http://localhost:[assigned-port]`
 
-## Files in this template
-
-- **README.md** - This documentation file
-- **Rediaccfile** - Bash script with functions to manage Nginx:
-  - `prep()` - Pulls the latest Nginx Docker image
-  - `up()` - Starts Nginx container with port 80 exposed
-  - `down()` - Stops and removes the Nginx container
+## Resources
+- [Official Docker Hub](https://hub.docker.com/_/nginx)
+- [Official Documentation](https://nginx.org/en/docs/)

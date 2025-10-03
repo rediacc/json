@@ -1,0 +1,18 @@
+services:
+  rethinkdb:
+    image: rethinkdb:latest
+    container_name: ${CONTAINER_NAME}
+    command: rethinkdb --bind all --cache-size ${RETHINKDB_CACHE_SIZE}
+    ports:
+      - "8080"    # Web admin interface
+      - "28015"   # Client driver port
+      - "29015"   # Intracluster connections
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "rethinkdb", "admin", "--join", "localhost:29015", "--eval", "1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    restart: unless-stopped

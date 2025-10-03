@@ -1,0 +1,17 @@
+#!/bin/bash
+
+prep() {
+  docker pull crate:latest
+  mkdir -p data
+  return $?
+}
+
+up() {
+  docker compose up -d
+  return $?
+}
+
+down() {
+  docker compose down -v
+  return $?
+}

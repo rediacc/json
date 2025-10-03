@@ -1,0 +1,26 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Memcached image..."
+    docker pull memcached:latest
+
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+
+    echo "Starting Memcached server..."
+    docker compose up -d
+    return $?
+}
+
+down() {
+    echo "Stopping Memcached server..."
+    docker compose down -v
+    return $?
+}
+
+"$@"

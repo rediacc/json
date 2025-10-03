@@ -1,0 +1,32 @@
+services:
+  couchbase:
+    image: couchbase:community-7.6.2
+    container_name: ${CONTAINER_NAME}
+    restart: always
+    environment:
+      - COUCHBASE_ADMINISTRATOR_USERNAME=${COUCHBASE_ADMINISTRATOR_USERNAME}
+      - COUCHBASE_ADMINISTRATOR_PASSWORD=${COUCHBASE_ADMINISTRATOR_PASSWORD}
+    ports:
+      - "8091"    # Web Console, REST/HTTP API
+      - "8092"    # Views, Query, and Search services
+      - "8093"    # Query service (N1QL)
+      - "8094"    # Full-text Search
+      - "8095"    # Analytics
+      - "8096"    # Eventing
+      - "11210"   # Data service (memcached)
+      - "11211"   # Data service (memcached SSL)
+    volumes:
+      - ./data:/opt/couchbase/var
+      - ./init-cluster.sh:/docker-entrypoint-initdb.d/init-cluster.sh:ro
+    networks:
+      - couchbase-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/pools"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+networks:
+  couchbase-network:
+    driver: bridge

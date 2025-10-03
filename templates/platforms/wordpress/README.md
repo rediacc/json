@@ -3,43 +3,36 @@
 Full WordPress installation with MySQL database.
 
 ## Features
-- Latest WordPress version
-- MySQL 8.0 database backend
-- Persistent storage for uploads and content
-- Auto-restart on failure
+- Latest WordPress version with MySQL 8.0 backend
+- Persistent storage for content, uploads, and database
+- Auto-restart on failure for reliability
+- Simple setup with guided installation wizard
 
 ## Usage
 ```bash
 source Rediaccfile
+prep  # Pull images and create directories
 up    # Start WordPress and MySQL
-down  # Stop all services
+down  # Stop and cleanup
 ```
 
+## Configuration
+Edit `.env` to customize:
+- `REDIACC_SDK_REPO_INIT_SIZE`: Initial repository size (default: 1G)
+- `REDIACC_SDK_REPO_RESIZE_SIZE`: Resize amount when full (default: empty)
+
+Database credentials are configured in `docker-compose.yaml`:
+- Database name: `exampledb`
+- Database user: `exampleuser`
+- Database password: `examplepass`
+
 ## Access
-- WordPress: http://localhost:8000
-- Database: localhost:3306
+- **Port**: 80 (Docker auto-assigns host port)
+- **Credentials**: Complete installation wizard on first visit
+- **Find assigned port**: `docker compose ps`
 
-## Default Credentials
-- MySQL Root Password: somewordpress
-- WordPress DB User: wordpress
-- WordPress DB Password: wordpress
-- WordPress DB Name: wordpress
+Visit the assigned port and follow the WordPress installation wizard to set up your admin account.
 
-## Setup
-1. Run `up` to start services
-2. Visit http://localhost:8000
-3. Complete WordPress installation wizard
-4. Your site is ready!
-
-## Files in this template
-
-- **README.md** - This documentation file
-- **Rediaccfile** - Bash script with functions to manage WordPress and MySQL:
-  - `prep()` - Pulls WordPress and MySQL images, creates data directories
-  - `up()` - Starts both services using docker-compose
-  - `down()` - Stops and removes all containers
-- **docker-compose.yaml** - Docker Compose configuration with:
-  - WordPress service with environment variables for database connection
-  - MySQL 8.0 service with database initialization
-  - Persistent volumes for both WordPress content and MySQL data
-  - Auto-restart policy for reliability
+## Resources
+- [Official Docker Hub](https://hub.docker.com/_/wordpress)
+- [Official Documentation](https://wordpress.org/support/)

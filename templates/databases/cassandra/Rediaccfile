@@ -1,0 +1,36 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Cassandra image..."
+    docker pull cassandra:5.0
+
+    echo "Creating data directory..."
+    mkdir -p ./data
+    chmod 755 ./data
+
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+
+    echo "Starting Cassandra server..."
+    echo "Note: Cassandra may take 30-60 seconds to fully start"
+    docker compose up -d
+
+    echo ""
+    echo "Waiting for Cassandra to be ready..."
+    echo "You can check the status with: docker logs -f ${CONTAINER_NAME:-cassandra-db}"
+
+    return $?
+}
+
+down() {
+    echo "Stopping Cassandra server..."
+    docker compose down -v
+    return $?
+}
+
+"$@"

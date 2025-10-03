@@ -1,0 +1,48 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling Couchbase image..."
+    docker pull couchbase:community-7.6.2
+
+    echo "Creating data directory..."
+    mkdir -p ./data
+    chmod 755 ./data
+
+    echo "Making initialization script executable..."
+    chmod +x ./init-cluster.sh
+
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+
+    echo "Starting Couchbase Server..."
+    docker compose up -d
+
+    # Wait for container to be running
+    echo "Waiting for container to start..."
+    sleep 5
+
+    # Run initialization script inside the container
+    echo "Initializing Couchbase cluster..."
+    docker exec -i ${CONTAINER_NAME:-couchbase-server} bash < ./init-cluster.sh
+
+    echo ""
+    echo "Couchbase Server is ready!"
+    echo "Access the web console at: http://localhost:8091"
+    echo "Username: ${COUCHBASE_ADMINISTRATOR_USERNAME:-Administrator}"
+    echo "Password: ${COUCHBASE_ADMINISTRATOR_PASSWORD}"
+
+    return $?
+}
+
+down() {
+    echo "Stopping Couchbase Server..."
+    docker compose down -v
+    return $?
+}
+
+"$@"

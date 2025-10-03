@@ -1,0 +1,17 @@
+#!/bin/bash
+
+prep() {
+  docker pull mariadb:latest
+  mkdir -p data config init
+  return $?
+}
+
+up() {
+  docker compose up -d
+  return $?
+}
+
+down() {
+  docker compose down -v
+  return $?
+}

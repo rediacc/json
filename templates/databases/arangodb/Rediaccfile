@@ -1,0 +1,32 @@
+#!/bin/bash
+
+prep() {
+    echo "Pulling ArangoDB image..."
+    docker pull arangodb:3.11
+
+    echo "Creating data directories..."
+    mkdir -p ./data
+    mkdir -p ./apps
+    chmod 755 ./data
+    chmod 755 ./apps
+
+    return $?
+}
+
+up() {
+    if [ -f .env ]; then
+        source .env
+    fi
+
+    echo "Starting ArangoDB server..."
+    docker compose up -d
+    return $?
+}
+
+down() {
+    echo "Stopping ArangoDB server..."
+    docker compose down -v
+    return $?
+}
+
+"$@"

@@ -30,7 +30,7 @@ I need you to create a new Rediacc template based on the following project:
 
 3. **Template Structure:**
    Create a complete template with:
-   - **README.md** - Project description, features, usage instructions
+   - **README.md** - Concise documentation following standard format (see below)
      - First `#` header becomes the template title
      - First paragraph becomes the template description
    - **docker-compose.yaml** - Service definitions following volume best practices
@@ -49,7 +49,50 @@ I need you to create a new Rediacc template based on the following project:
    - ✅ Document all required ports and dependencies
    - ✅ Provide clear setup instructions
 
-5. **Template Discovery:**
+5. **README.md Standard Format:**
+   Keep README files **concise** and link to official documentation for details.
+
+   **Required Structure:**
+   ```markdown
+   # [Project Name]
+
+   [One-sentence description - becomes template description in catalog]
+
+   ## Features
+   - [3-5 key features, one line each]
+   - [Focus on what makes this template useful]
+
+   ## Usage
+   ```bash
+   source Rediaccfile
+   prep  # Pull images and create directories
+   up    # Start [service name]
+   down  # Stop and cleanup
+   ```
+
+   ## Configuration
+   Edit `.env` to customize:
+   - `VARIABLE_NAME`: Brief description (default: value)
+   - `ANOTHER_VAR`: Brief description (default: value)
+
+   ## Access
+   - **Port**: [port number] (Docker auto-assigns host port)
+   - **Credentials**: Check `.env` file
+   - **Find assigned port**: `docker compose ps`
+
+   ## Resources
+   - [Official Docker Hub](https://hub.docker.com/_/[image-name])
+   - [Official Documentation](https://[project-site])
+   ```
+
+   **Guidelines:**
+   - Keep it under 100 lines total
+   - Link to Docker Hub and official docs instead of duplicating information
+   - Focus on template-specific usage, not general project documentation
+   - No need to explain what the project is in detail (link to docs)
+   - Avoid lengthy configuration examples (keep it minimal)
+
+6. **Template Discovery:**
    - Templates are auto-discovered by `generate.sh` based on folder structure
    - Category is extracted from parent folder name
    - Title is extracted from first `#` header in README.md
@@ -57,11 +100,11 @@ I need you to create a new Rediacc template based on the following project:
    - Tags are auto-generated from category and template name
    - No metadata.json needed!
 
-6. **Template Location:**
+7. **Template Location:**
    - Place in appropriate category: `templates/{category}/{project-name}/`
    - Use lowercase, hyphenated names (e.g., `nextcloud-aio`, `gitlab-ce`)
 
-7. **Validation:**
+8. **Validation:**
    After creating the template:
    - Test that `docker volume ls` shows NO volumes after starting services
    - Verify all data persists in relative directories

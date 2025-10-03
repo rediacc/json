@@ -3,62 +3,57 @@
 High-performance PostgreSQL setup with benchmarking and automated configuration.
 
 ## Features
-- **Dynamic Containers**: Auto-detected via Docker Compose  
-- **Auto Port Assignment**: Uses available 32xxx ports  
-- **CPU Optimization**: Auto-detects cores, max 8 threads  
-- **Bulk Data Gen**: Fast table creation with realistic data  
-- **Sysbench Integration**: OLTP benchmarks included  
-- **One-Command Host Setup**: Installs required tools  
+- Auto-detected container and dynamic port assignment
+- CPU-optimized threading (auto-detects cores, max 8)
+- Sysbench integration for OLTP performance testing
+- Bulk data generation for custom tables
+- One-command host setup for required tools
 
-## Quick Start
+## Usage
 ```bash
-# 1. Install tools
-./postgres.sh host_setup
-
-# 2. Start PostgreSQL
-./Rediaccfile prep && ./Rediaccfile up
-
-# 3. Init database
-source ./postgres.sh
-./postgres.sh create_database
-
-# 4. Run benchmarks
-./postgres.sh initialize_sysbench
-./postgres.sh benchmark_qps
-./postgres.sh cleanup_sysbench
+source Rediaccfile
+prep  # Pull images and create directories
+up    # Start PostgreSQL
+down  # Stop and cleanup
 ```
 
-### Custom Data
+### Benchmarking
+```bash
+# Install sysbench and PostgreSQL client
+./postgres.sh host_setup
+
+# Initialize database and run benchmarks
+source ./postgres.sh
+./postgres.sh create_database
+./postgres.sh initialize_sysbench    # Load 8×1M tables
+./postgres.sh benchmark_qps          # Run QPS test
+./postgres.sh cleanup_sysbench       # Remove test data
+```
+
+### Custom Data Generation
 ```bash
 ./postgres.sh create_custom_table my_users 100000 users
 ./postgres.sh create_custom_table inventory 50000 products
-./postgres.sh create_custom_table sales 25000 orders
 ```
-- **100K users**: ~1.4s (72K rows/s)  
-- **50K products**: ~0.3s (147K rows/s)  
-- **1M generic**: ~3–5s  
+Performance: 100K rows in ~1.4s (72K rows/sec)
 
 ## Configuration
-- Ports auto-detected  
-- Threads = `min(CPU cores, 8)`  
-- Container name auto-detected  
+Edit `.env` to customize:
+- `PGUSER`: PostgreSQL username (default: postgres)
+- `PGPASSWORD`: Database password (default: mysecretpassword)
+- `DBNAME`: Database name for benchmarks (default: sysbench_test)
+- `TABLES`: Number of sysbench tables (default: 8)
+- `TABLE_SIZE`: Rows per sysbench table (default: 1000000)
 
-`.env` example:
-```bash
-PGHOST=127.0.0.1
-PGUSER=postgres
-PGPASSWORD=mysecretpassword
-DBNAME=sysbench_test
-TABLES=8
-TABLE_SIZE=1000000
-```
+Container name and port are auto-detected. Threads auto-set to CPU cores (max 8).
 
-## Commands
-**Rediaccfile**: `prep | up | down`  
-**postgres.sh**:  
-- `host_setup` – Install tools  
-- `create_database` – Init DB  
-- `initialize_sysbench` – Load 8×1M tables  
-- `benchmark_qps` – Run QPS test  
-- `cleanup_sysbench` – Remove test data  
-- `create_custom_table <name> [rows] [type]` – Bulk insert  
+## Access
+- **Port**: 5432 (Docker auto-assigns host port)
+- **Credentials**: Check `.env` file
+- **Find assigned port**: `docker compose ps`
+- **Connect**: `psql -h 127.0.0.1 -p <host-port> -U postgres`
+
+## Resources
+- [Official Docker Hub](https://hub.docker.com/_/postgres)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Sysbench Documentation](https://github.com/akopytov/sysbench)

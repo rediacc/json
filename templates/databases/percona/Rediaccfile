@@ -1,0 +1,17 @@
+#!/bin/bash
+
+prep() {
+  docker pull percona:8.0
+  mkdir -p data/mysql
+  return $?
+}
+
+up() {
+  docker compose up -d
+  return $?
+}
+
+down() {
+  docker compose down -v
+  return $?
+}

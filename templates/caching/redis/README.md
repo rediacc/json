@@ -4,30 +4,24 @@ High-performance, in-memory data structure store used as a database, cache, and 
 
 ## Features
 
-- Redis 7 Alpine (lightweight)
-- Password authentication
-- Configurable memory limits
-- LRU eviction policy
-- Persistent data storage
-- Health checks
-- Isolated network
+- Redis 7 Alpine (lightweight and fast)
+- Password authentication with configurable credentials
+- Configurable memory limits with LRU eviction policy
+- Persistent data storage with health checks
+- Isolated network for security
 
 ## Usage
 
 ```bash
-# Prepare the environment (pull images)
-./Rediaccfile prep
-
-# Start Redis server
-./Rediaccfile up
-
-# Stop Redis server
-./Rediaccfile down
+source Rediaccfile
+prep  # Pull images and create directories
+up    # Start Redis server
+down  # Stop and cleanup
 ```
 
 ## Configuration
 
-Edit `.env` file to customize:
+Edit `.env` to customize:
 
 - `CONTAINER_NAME`: Container name (default: redis-server)
 - `REDIS_PORT`: Port mapping (default: 6379)
@@ -37,28 +31,20 @@ Edit `.env` file to customize:
 
 ## Access
 
-Connect to Redis:
+- **Port**: 6379 (Docker auto-assigns host port)
+- **Password**: Set in `.env` file (`REDIS_PASSWORD`)
+- **Find assigned port**: `docker compose ps`
 
+Connect using redis-cli:
 ```bash
 # Using redis-cli
-redis-cli -h localhost -p 6379 -a yourSecurePasswordHere123!
+redis-cli -h localhost -p 6379 -a yourPassword
 
-# Using Docker
-docker exec -it redis-server redis-cli -a yourSecurePasswordHere123!
+# Using Docker exec
+docker exec -it redis-server redis-cli -a yourPassword
 ```
 
-Common commands:
-```
-SET key value
-GET key
-INCR counter
-LPUSH list value
-HSET hash field value
-```
+## Resources
 
-## Files
-
-- `Rediaccfile`: Main control script for Redis operations
-- `docker-compose.yaml`: Container configuration
-- `.env`: Environment variables and Redis settings
-- `data/`: Persistent storage directory (created on first run)
+- [Official Docker Hub](https://hub.docker.com/_/redis)
+- [Official Documentation](https://redis.io/docs/)

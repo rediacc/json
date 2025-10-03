@@ -3,38 +3,31 @@
 Quick deployment of Microsoft SQL Server 2022 using Docker.
 
 ## Features
-- SQL Server 2022 Developer Edition
+- SQL Server 2022 Developer Edition with SQL Server Agent
 - Persistent storage for data, logs, and secrets
-- SQL Server Agent enabled
-- Configurable SA password
+- Configurable SA password and security settings
+- Health check monitoring included
 
 ## Usage
 ```bash
 source Rediaccfile
-prep  # Create necessary directories
+prep  # Pull images and create directories
 up    # Start SQL Server
-down  # Stop SQL Server
+down  # Stop and cleanup
 ```
 
 ## Configuration
-- Port: 1433 (customizable via MSSQL_PORT)
-- Default SA password: yourStrong(!)Password
-- Data persisted in: ./data, ./log, ./secrets
+Edit `.env` to customize:
+- `MSSQL_SA_PASSWORD`: SA account password (default: yourStrong(!)Password)
+- `ACCEPT_EULA`: Accept MSSQL EULA (default: Y)
+- `MSSQL_PID`: Product ID/Edition (default: Developer)
 
-## Connect
-```bash
-sqlcmd -S localhost,1433 -U sa -P 'yourStrong(!)Password'
-```
+## Access
+- **Port**: 1433 (Docker auto-assigns host port)
+- **Credentials**: SA user with password from `.env`
+- **Find assigned port**: `docker compose ps`
+- **Connect**: `sqlcmd -S localhost,<port> -U sa -P '<password>'`
 
-## Files in this template
-
-- **README.md** - This documentation file
-- **Rediaccfile** - Bash script with functions to manage the SQL Server container:
-  - `prep()` - Pulls the SQL Server image and creates data directories
-  - `up()` - Starts SQL Server using docker-compose
-  - `down()` - Stops and removes the SQL Server container
-- **docker-compose.yaml** - Docker Compose configuration for SQL Server with:
-  - Environment variables from .env file
-  - Port mapping for SQL Server (1433)
-  - Volume mounts for data persistence
-- **.env** - Environment variables file (create this with your configuration)
+## Resources
+- [Official Docker Hub](https://hub.docker.com/_/microsoft-mssql-server)
+- [Official Documentation](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-overview)
