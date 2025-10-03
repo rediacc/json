@@ -15,9 +15,9 @@ services:
     healthcheck:
       test: ["CMD-SHELL", "wget --spider http://127.0.0.1:8529/_api/version 2>&1 | grep -q '401\\|200' || exit 1"]
       interval: 10s
-      timeout: 5s
+      timeout: 10s
       retries: 5
-      start_period: 10s
+      start_period: 40s
     networks:
       - arangodb-network
 

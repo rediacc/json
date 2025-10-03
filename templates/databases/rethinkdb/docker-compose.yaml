@@ -10,9 +10,9 @@ services:
     volumes:
       - ./data:/data
     healthcheck:
-      test: ["CMD", "rethinkdb", "admin", "--join", "localhost:29015", "--eval", "1"]
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/ || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
+      start_period: 20s
     restart: unless-stopped

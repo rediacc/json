@@ -21,11 +21,11 @@ services:
     networks:
       - couchbase-network
     healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8091/pools > /dev/null || curl -s http://localhost:8091/pools 2>&1 | grep -q '401' || exit 1"]
+      test: ["CMD-SHELL", "curl -s http://localhost:8091/pools/default 2>&1 | grep -q '\"healthy\":true' || exit 1"]
       interval: 15s
-      timeout: 5s
+      timeout: 10s
       retries: 10
-      start_period: 30s
+      start_period: 60s
 
 networks:
   couchbase-network:
