@@ -46,10 +46,10 @@ SKIPPED_TESTS=0
 # Arrays for storing results
 declare -a TEST_RESULTS=()
 declare -a SKIP_TEMPLATES=()
+declare -a FILTER_TEMPLATES=()
 
 # Filter options
 FILTER_CATEGORY=""
-FILTER_TEMPLATE=""
 
 # Timestamps
 START_TIME=$(date +%s)
@@ -140,8 +140,15 @@ discover_templates() {
             fi
         fi
 
-        if [[ -n "$FILTER_TEMPLATE" ]]; then
-            if [[ "$relative_path" != "$FILTER_TEMPLATE" ]]; then
+        if [[ ${#FILTER_TEMPLATES[@]} -gt 0 ]]; then
+            local template_matches=0
+            for filter_template in "${FILTER_TEMPLATES[@]}"; do
+                if [[ "$relative_path" == "$filter_template" ]]; then
+                    template_matches=1
+                    break
+                fi
+            done
+            if [[ $template_matches -eq 0 ]]; then
                 continue
             fi
         fi
@@ -614,7 +621,7 @@ main() {
                 shift 2
                 ;;
             --template)
-                FILTER_TEMPLATE="$2"
+                FILTER_TEMPLATES+=("$2")
                 shift 2
                 ;;
             --skip)
@@ -653,8 +660,8 @@ main() {
         log_info "Filter category: $FILTER_CATEGORY"
     fi
 
-    if [[ -n "$FILTER_TEMPLATE" ]]; then
-        log_info "Filter template: $FILTER_TEMPLATE"
+    if [[ ${#FILTER_TEMPLATES[@]} -gt 0 ]]; then
+        log_info "Filter templates: ${FILTER_TEMPLATES[*]}"
     fi
 
     if [[ ${#SKIP_TEMPLATES[@]} -gt 0 ]]; then
