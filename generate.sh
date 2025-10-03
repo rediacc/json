@@ -405,7 +405,7 @@ generate_website() {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Template Catalog</title>
+    <title>Rediacc Repository Template Catalog</title>
 
     <!-- Markdown and Syntax Highlighting Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/marked@11.1.1/marked.min.js"></script>
@@ -415,38 +415,38 @@ generate_website() {
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; background: #f5f7fa; }
-        .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-        header { text-align: center; margin-bottom: 40px; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #2c3e50; font-size: 2.5rem; margin-bottom: 10px; }
+        .container { max-width: 75rem; margin: 0 auto; padding: 1.25rem; }
+        header { text-align: center; margin-bottom: 2.5rem; background: white; padding: 2.5rem; border-radius: 0.625rem; box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.1); }
+        h1 { color: #2c3e50; font-size: 2.5rem; margin-bottom: 0.625rem; }
         .subtitle { color: #7f8c8d; font-size: 1.1rem; }
-        .stats { display: flex; justify-content: center; gap: 30px; margin-top: 20px; }
+        .stats { display: flex; justify-content: center; gap: 1.875rem; margin-top: 1.25rem; }
         .stat { text-align: center; }
         .stat-number { font-size: 2rem; font-weight: bold; color: #3498db; }
         .stat-label { color: #7f8c8d; font-size: 0.9rem; }
-        .filters { background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .filter-group { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+        .filters { background: white; padding: 1.25rem; border-radius: 0.625rem; margin-bottom: 1.875rem; box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.1); }
+        .filter-group { display: flex; gap: 0.9375rem; align-items: center; flex-wrap: wrap; }
         .filter-group label { font-weight: 500; color: #2c3e50; }
-        input, select { padding: 8px 12px; border: 2px solid #e0e6ed; border-radius: 5px; font-size: 14px; }
+        input, select { padding: 0.5rem 0.75rem; border: 0.125rem solid #e0e6ed; border-radius: 0.3125rem; font-size: 0.875rem; }
         input:focus, select:focus { outline: none; border-color: #3498db; }
-        .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 25px; }
-        .template-card { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
-        .template-card:hover { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
-        .template-header { padding: 20px; border-bottom: 1px solid #e0e6ed; }
-        .template-title { font-size: 1.3rem; font-weight: 600; color: #2c3e50; margin-bottom: 8px; }
-        .template-meta { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
-        .template-category { background: #3498db; color: white; padding: 4px 8px; border-radius: 15px; font-size: 0.8rem; font-weight: 500; }
-        .template-files { background: #ecf0f1; color: #7f8c8d; padding: 4px 8px; border-radius: 15px; font-size: 0.8rem; }
+        .templates-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(21.875rem, 1fr)); gap: 1.5625rem; }
+        .template-card { background: white; border-radius: 0.625rem; overflow: hidden; box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s; }
+        .template-card:hover { transform: translateY(-0.125rem); box-shadow: 0 0.25rem 1.25rem rgba(0,0,0,0.15); }
+        .template-header { padding: 1.25rem; border-bottom: 0.0625rem solid #e0e6ed; }
+        .template-title { font-size: 1.3rem; font-weight: 600; color: #2c3e50; margin-bottom: 0.5rem; }
+        .template-meta { display: flex; gap: 0.625rem; align-items: center; margin-bottom: 0.625rem; }
+        .template-category { background: #3498db; color: white; padding: 0.25rem 0.5rem; border-radius: 0.9375rem; font-size: 0.8rem; font-weight: 500; }
+        .template-files { background: #ecf0f1; color: #7f8c8d; padding: 0.25rem 0.5rem; border-radius: 0.9375rem; font-size: 0.8rem; }
         .template-description { color: #7f8c8d; line-height: 1.5; }
-        .template-actions { padding: 20px; background: #f8f9fa; }
-        .btn { display: inline-block; padding: 10px 20px; background: #3498db; color: white; text-decoration: none; border-radius: 5px; font-weight: 500; transition: background 0.2s; cursor: pointer; border: none; }
+        .template-actions { padding: 1.25rem; background: #f8f9fa; }
+        .btn { display: inline-block; padding: 0.625rem 1.25rem; background: #3498db; color: white; text-decoration: none; border-radius: 0.3125rem; font-weight: 500; transition: background 0.2s; cursor: pointer; border: none; }
         .btn:hover { background: #2980b9; }
         .btn-secondary { background: #95a5a6; }
         .btn-secondary:hover { background: #7f8c8d; }
-        .no-results { text-align: center; color: #7f8c8d; font-size: 1.2rem; margin-top: 60px; }
-        .api-docs { background: white; padding: 30px; border-radius: 10px; margin-top: 40px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .api-title { font-size: 1.5rem; color: #2c3e50; margin-bottom: 20px; }
-        .endpoint { background: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 15px; font-family: 'Monaco', 'Menlo', monospace; }
-        .method { background: #27ae60; color: white; padding: 2px 8px; border-radius: 3px; font-size: 0.8rem; margin-right: 10px; }
+        .no-results { text-align: center; color: #7f8c8d; font-size: 1.2rem; margin-top: 3.75rem; }
+        .api-docs { background: white; padding: 1.875rem; border-radius: 0.625rem; margin-top: 2.5rem; box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.1); }
+        .api-title { font-size: 1.5rem; color: #2c3e50; margin-bottom: 1.25rem; }
+        .endpoint { background: #f8f9fa; padding: 0.9375rem; border-radius: 0.3125rem; margin-bottom: 0.9375rem; font-family: 'Monaco', 'Menlo', monospace; }
+        .method { background: #27ae60; color: white; padding: 0.125rem 0.5rem; border-radius: 0.1875rem; font-size: 0.8rem; margin-right: 0.625rem; }
 
         /* Modal Styles */
         .modal-overlay {
@@ -457,7 +457,7 @@ generate_website() {
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(4px);
+            backdrop-filter: blur(0.25rem);
             z-index: 1000;
             animation: fadeIn 0.2s ease-in-out;
         }
@@ -466,7 +466,7 @@ generate_website() {
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 20px;
+            padding: 1.25rem;
         }
 
         @keyframes fadeIn {
@@ -477,7 +477,7 @@ generate_website() {
         @keyframes slideUp {
             from {
                 opacity: 0;
-                transform: translateY(30px);
+                transform: translateY(1.875rem);
             }
             to {
                 opacity: 1;
@@ -487,28 +487,29 @@ generate_website() {
 
         .modal-container {
             background: white;
-            border-radius: 12px;
-            max-width: 1400px;
+            border-radius: 0.75rem;
+            max-width: 87.5rem;
             width: 100%;
-            max-height: 90vh;
+            height: 90vh;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.3);
             animation: slideUp 0.3s ease-out;
         }
 
         .modal-header {
-            padding: 25px 30px;
-            border-bottom: 1px solid #e0e6ed;
+            padding: 1.5625rem 1.875rem;
+            border-bottom: 0.0625rem solid #e0e6ed;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-shrink: 0;
         }
 
         .modal-header-content {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 0.9375rem;
         }
 
         .modal-icon {
@@ -518,20 +519,20 @@ generate_website() {
         .modal-title-group h2 {
             color: #2c3e50;
             font-size: 1.8rem;
-            margin-bottom: 5px;
+            margin-bottom: 0.3125rem;
         }
 
         .modal-tags {
             display: flex;
-            gap: 8px;
+            gap: 0.5rem;
             flex-wrap: wrap;
         }
 
         .modal-tag {
             background: #3498db;
             color: white;
-            padding: 4px 12px;
-            border-radius: 15px;
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.9375rem;
             font-size: 0.85rem;
             font-weight: 500;
         }
@@ -542,7 +543,7 @@ generate_website() {
             font-size: 2rem;
             color: #7f8c8d;
             cursor: pointer;
-            padding: 5px 10px;
+            padding: 0.3125rem 0.625rem;
             transition: color 0.2s;
         }
 
@@ -552,13 +553,14 @@ generate_website() {
 
         .modal-tabs {
             display: flex;
-            padding: 0 30px;
+            padding: 0 1.875rem;
             background: #f8f9fa;
-            border-bottom: 2px solid #e0e6ed;
+            border-bottom: 0.125rem solid #e0e6ed;
+            flex-shrink: 0;
         }
 
         .modal-tab {
-            padding: 15px 25px;
+            padding: 0.9375rem 1.5625rem;
             background: none;
             border: none;
             color: #7f8c8d;
@@ -580,21 +582,23 @@ generate_website() {
         .modal-tab.active::after {
             content: '';
             position: absolute;
-            bottom: -2px;
+            bottom: -0.125rem;
             left: 0;
             right: 0;
-            height: 2px;
+            height: 0.125rem;
             background: #3498db;
         }
 
         .modal-body {
             flex: 1;
             overflow-y: auto;
-            padding: 30px;
+            padding: 1.875rem;
+            min-height: 0;
         }
 
         .tab-content {
             display: none;
+            height: 100%;
         }
 
         .tab-content.active {
@@ -605,19 +609,21 @@ generate_website() {
         .overview-content {
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 30px;
+            gap: 1.875rem;
+            height: 100%;
         }
 
         .readme-section, .features-section {
             background: #f8f9fa;
-            padding: 25px;
-            border-radius: 10px;
+            padding: 1.5625rem;
+            border-radius: 0.625rem;
+            overflow-y: auto;
         }
 
         .section-title {
             font-size: 1.3rem;
             color: #2c3e50;
-            margin-bottom: 15px;
+            margin-bottom: 0.9375rem;
             font-weight: 600;
         }
 
@@ -626,16 +632,16 @@ generate_website() {
             line-height: 1.8;
         }
 
-        .readme-content h1 { font-size: 1.8rem; margin: 20px 0 10px; color: #2c3e50; }
-        .readme-content h2 { font-size: 1.5rem; margin: 18px 0 10px; color: #2c3e50; }
-        .readme-content h3 { font-size: 1.3rem; margin: 15px 0 8px; color: #34495e; }
-        .readme-content p { margin: 10px 0; }
-        .readme-content ul, .readme-content ol { margin: 10px 0 10px 25px; }
-        .readme-content li { margin: 5px 0; }
-        .readme-content code { background: #2c3e50; color: #ecf0f1; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
-        .readme-content pre { background: #2c3e50; color: #ecf0f1; padding: 15px; border-radius: 5px; overflow-x: auto; margin: 15px 0; }
+        .readme-content h1 { font-size: 1.8rem; margin: 1.25rem 0 0.625rem; color: #2c3e50; }
+        .readme-content h2 { font-size: 1.5rem; margin: 1.125rem 0 0.625rem; color: #2c3e50; }
+        .readme-content h3 { font-size: 1.3rem; margin: 0.9375rem 0 0.5rem; color: #34495e; }
+        .readme-content p { margin: 0.625rem 0; }
+        .readme-content ul, .readme-content ol { margin: 0.625rem 0 0.625rem 1.5625rem; }
+        .readme-content li { margin: 0.3125rem 0; }
+        .readme-content code { background: #2c3e50; color: #ecf0f1; padding: 0.125rem 0.375rem; border-radius: 0.1875rem; font-size: 0.9em; }
+        .readme-content pre { background: #2c3e50; color: #ecf0f1; padding: 0.9375rem; border-radius: 0.3125rem; overflow-x: auto; margin: 0.9375rem 0; }
         .readme-content pre code { background: none; padding: 0; }
-        .readme-content blockquote { border-left: 4px solid #3498db; padding-left: 15px; margin: 15px 0; color: #555; }
+        .readme-content blockquote { border-left: 0.25rem solid #3498db; padding-left: 0.9375rem; margin: 0.9375rem 0; color: #555; }
 
         .feature-list {
             list-style: none;
@@ -644,8 +650,8 @@ generate_website() {
         .feature-item {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 12px;
+            gap: 0.625rem;
+            margin-bottom: 0.75rem;
             color: #555;
         }
 
@@ -657,20 +663,20 @@ generate_website() {
         /* Files Tab */
         .files-content {
             display: grid;
-            grid-template-columns: 300px 1fr;
-            gap: 20px;
-            height: 500px;
+            grid-template-columns: 18.75rem 1fr;
+            gap: 1.25rem;
+            height: 100%;
         }
 
         .file-list {
             background: #f8f9fa;
-            border-radius: 10px;
+            border-radius: 0.625rem;
             overflow-y: auto;
         }
 
         .file-list-header {
-            padding: 15px;
-            border-bottom: 1px solid #e0e6ed;
+            padding: 0.9375rem;
+            border-bottom: 0.0625rem solid #e0e6ed;
             font-weight: 600;
             color: #2c3e50;
             position: sticky;
@@ -679,13 +685,13 @@ generate_website() {
         }
 
         .file-item {
-            padding: 12px 15px;
+            padding: 0.75rem 0.9375rem;
             cursor: pointer;
             transition: background 0.2s;
-            border-left: 3px solid transparent;
+            border-left: 0.1875rem solid transparent;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.625rem;
         }
 
         .file-item:hover {
@@ -705,15 +711,15 @@ generate_website() {
 
         .file-viewer {
             background: #f8f9fa;
-            border-radius: 10px;
+            border-radius: 0.625rem;
             overflow: hidden;
             display: flex;
             flex-direction: column;
         }
 
         .file-viewer-header {
-            padding: 15px;
-            border-bottom: 1px solid #e0e6ed;
+            padding: 0.9375rem;
+            border-bottom: 0.0625rem solid #e0e6ed;
             font-family: 'Monaco', 'Menlo', monospace;
             font-size: 0.9rem;
             color: #555;
@@ -729,7 +735,7 @@ generate_website() {
 
         .file-viewer-content pre {
             margin: 0;
-            padding: 20px;
+            padding: 1.25rem;
         }
 
         .file-viewer-content code {
@@ -740,21 +746,21 @@ generate_website() {
 
         /* Security Tab */
         .security-content {
-            max-width: 900px;
+            max-width: 56.25rem;
         }
 
         .security-alert {
             background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 20px;
-            border-radius: 5px;
-            margin-bottom: 30px;
+            border-left: 0.25rem solid #2196f3;
+            padding: 1.25rem;
+            border-radius: 0.3125rem;
+            margin-bottom: 1.875rem;
         }
 
         .security-alert-title {
             font-weight: 600;
             color: #1976d2;
-            margin-bottom: 8px;
+            margin-bottom: 0.5rem;
             font-size: 1.1rem;
         }
 
@@ -764,12 +770,12 @@ generate_website() {
         }
 
         .security-section {
-            margin-bottom: 30px;
+            margin-bottom: 1.875rem;
         }
 
         .security-section h3 {
             color: #2c3e50;
-            margin-bottom: 15px;
+            margin-bottom: 0.9375rem;
             font-size: 1.3rem;
         }
 
@@ -779,8 +785,8 @@ generate_website() {
         }
 
         .security-section li {
-            padding: 10px 0;
-            padding-left: 30px;
+            padding: 0.625rem 0;
+            padding-left: 1.875rem;
             position: relative;
             color: #555;
             line-height: 1.6;
@@ -801,18 +807,18 @@ generate_website() {
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 60px;
+            padding: 3.75rem;
             color: #7f8c8d;
         }
 
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #3498db;
+            border: 0.25rem solid #f3f3f3;
+            border-top: 0.25rem solid #3498db;
             border-radius: 50%;
-            width: 50px;
-            height: 50px;
+            width: 3.125rem;
+            height: 3.125rem;
             animation: spin 1s linear infinite;
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
         }
 
         @keyframes spin {
@@ -821,7 +827,7 @@ generate_website() {
         }
 
         /* Responsive Design */
-        @media (max-width: 1024px) {
+        @media (max-width: 64em) {
             .overview-content {
                 grid-template-columns: 1fr;
             }
@@ -832,41 +838,78 @@ generate_website() {
             }
 
             .file-list {
-                max-height: 200px;
+                max-height: 12.5rem;
             }
 
             .file-viewer {
-                min-height: 400px;
+                min-height: 25rem;
             }
         }
 
-        @media (max-width: 768px) {
+        @media (max-width: 48em) {
+            .container {
+                padding: 1rem;
+            }
+
+            header {
+                padding: 1.5rem;
+                margin-bottom: 1.5rem;
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .templates-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
             .modal-container {
-                max-height: 95vh;
-                margin: 10px;
+                height: 95vh;
+                margin: 0.625rem;
+                border-radius: 0.5rem;
             }
 
             .modal-header {
-                padding: 20px;
+                padding: 1.25rem;
             }
 
             .modal-header-content {
                 flex-direction: column;
                 align-items: flex-start;
+                gap: 0.625rem;
+            }
+
+            .modal-icon {
+                font-size: 2rem;
+            }
+
+            .modal-title-group h2 {
+                font-size: 1.5rem;
             }
 
             .modal-body {
-                padding: 20px;
+                padding: 1.25rem;
             }
 
             .modal-tabs {
                 overflow-x: auto;
-                padding: 0 20px;
+                padding: 0 1.25rem;
             }
 
             .modal-tab {
-                padding: 12px 15px;
+                padding: 0.75rem 0.9375rem;
                 font-size: 0.9rem;
+                white-space: nowrap;
+            }
+
+            .overview-content {
+                gap: 1.25rem;
+            }
+
+            .files-content {
+                gap: 1rem;
             }
         }
     </style>
@@ -874,7 +917,7 @@ generate_website() {
 <body>
     <div class="container">
         <header>
-            <h1>Template Catalog</h1>
+            <h1>Rediacc Repository Template Catalog</h1>
             <p class="subtitle">Discover and download infrastructure templates</p>
             <div class="stats">
                 <div class="stat">
