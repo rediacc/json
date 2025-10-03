@@ -2,6 +2,8 @@
 
 Self-contained infrastructure template repository with GitHub Pages catalog.
 
+**Live Catalog:** https://json.rediacc.com
+
 ## Usage
 
 ```bash
