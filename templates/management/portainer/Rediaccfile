@@ -16,8 +16,7 @@ up() {
 
     echo ""
     echo "Portainer is running!"
-    echo "HTTP: http://localhost:${PORTAINER_HTTP_PORT}"
-    echo "HTTPS: https://localhost:${PORTAINER_HTTPS_PORT}"
+    echo "Find assigned ports with: docker compose ps"
     echo "Please create an admin account on first access."
 
     return $?

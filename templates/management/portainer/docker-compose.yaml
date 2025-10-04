@@ -4,16 +4,13 @@ services:
     container_name: ${CONTAINER_NAME}
     restart: always
     ports:
-      - "${PORTAINER_HTTP_PORT}:9000"
-      - "${PORTAINER_HTTPS_PORT}:9443"
+      - "9000"
+      - "9443"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - portainer_data:/data
+      - ./data:/data
     networks:
       - portainer-network
-
-volumes:
-  portainer_data:
 
 networks:
   portainer-network:

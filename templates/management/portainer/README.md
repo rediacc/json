@@ -20,8 +20,6 @@ down  # Stop and cleanup
 ## Configuration
 Edit `.env` to customize:
 - `CONTAINER_NAME`: Container name (default: portainer)
-- `PORTAINER_HTTP_PORT`: HTTP port (default: 9000)
-- `PORTAINER_HTTPS_PORT`: HTTPS port (default: 9443)
 
 ## Initial Setup
 1. Access Portainer via HTTP or HTTPS
