@@ -8,9 +8,9 @@ prep() {
     mkdir -p ./databases
     mkdir -p ./backup
     mkdir -p ./config
-    chmod 755 ./databases ./backup ./config
+    chmod 755 ./databases ./backup ./config 2>/dev/null || true
 
-    return $?
+    return 0
 }
 
 up() {

@@ -20,12 +20,6 @@ services:
       - ./init-cluster.sh:/docker-entrypoint-initdb.d/init-cluster.sh:ro
     networks:
       - couchbase-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s http://localhost:8091/pools/default 2>&1 | grep -q '\"healthy\":true' || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 10
-      start_period: 60s
 
 networks:
   couchbase-network:

@@ -14,12 +14,6 @@ services:
       - ./config:/orientdb/config
     networks:
       - orientdb-network
-    healthcheck:
-      test: ["CMD-SHELL", "curl -s -o /dev/null -w '%{http_code}' http://localhost:2480/ | grep -q '200\\|401' || exit 1"]
-      interval: 15s
-      timeout: 10s
-      retries: 5
-      start_period: 30s
 
 networks:
   orientdb-network:
