@@ -11,7 +11,8 @@ services:
       - "2181"
     volumes:
       - ./data/zookeeper:/var/lib/zookeeper/data
-      - ./data/zookeeper-logs:/var/lib/zookeeper/log
+    tmpfs:
+      - /var/lib/zookeeper/log
     networks:
       - kafka-network
     healthcheck:

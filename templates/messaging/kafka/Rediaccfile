@@ -6,13 +6,13 @@ prep() {
     docker pull confluentinc/cp-zookeeper:7.5.0
     docker pull confluentinc/cp-kafka-rest:7.5.0
     docker pull landoop/kafka-topics-ui:latest
-    
+
     echo "Creating data directories..."
     mkdir -p ./data/zookeeper
     mkdir -p ./data/kafka
-    chmod -R 755 ./data
-    
-    return $?
+    chmod -R 777 ./data 2>/dev/null || true
+
+    return 0
 }
 
 up() {
