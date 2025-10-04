@@ -1,16 +1,23 @@
 #!/bin/bash
 
 prep() {
-  docker pull nginx
+  echo "Pulling Nginx image..."
+  docker pull nginx:latest
   return $?
 }
 
 up() {
-  docker run --rm --detach --name rediacc-nginx --publish 80 nginx
+  if [ -f .env ]; then
+    source .env
+  fi
+
+  echo "Starting Nginx server..."
+  docker compose up -d
   return $?
 }
 
 down() {
-  docker stop rediacc-nginx
+  echo "Stopping Nginx server..."
+  docker compose down -v
   return $?
 }

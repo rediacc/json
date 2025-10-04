@@ -1,0 +1,18 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: ${CONTAINER_NAME}
+    restart: always
+    ports:
+      - "${NGINX_PORT}"
+    networks:
+      - nginx-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  nginx-network:
+    driver: bridge
