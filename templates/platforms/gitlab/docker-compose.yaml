@@ -19,12 +19,6 @@ services:
       - ./data:/var/opt/gitlab
     networks:
       - gitlab-network
-    healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost/-/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 10
-      start_period: 120s
 
 networks:
   gitlab-network:
