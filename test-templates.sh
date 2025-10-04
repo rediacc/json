@@ -19,7 +19,7 @@ set -euo pipefail
 
 # Configuration
 TEST_TIMEOUT=${TEST_TIMEOUT:-240}  # 4 minutes max per function
-HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:-120}
+HEALTH_CHECK_TIMEOUT=${HEALTH_CHECK_TIMEOUT:-360}  # 6 minutes for slow-starting services like GitLab
 RESULTS_FILE=${RESULTS_FILE:-test-results.json}
 VERBOSE=${VERBOSE:-0}
 CLEANUP_IMAGES=${CLEANUP_IMAGES:-1}
@@ -105,7 +105,7 @@ Options:
 
 Environment Variables:
   TEST_TIMEOUT              Max time per function in seconds (default: 240)
-  HEALTH_CHECK_TIMEOUT      Max wait for health checks in seconds (default: 120)
+  HEALTH_CHECK_TIMEOUT      Max wait for health checks in seconds (default: 360)
   RESULTS_FILE              Output file for JSON results
   VERBOSE                   Set to 1 for detailed output
   CLEANUP_IMAGES            Set to 0 to skip image cleanup
