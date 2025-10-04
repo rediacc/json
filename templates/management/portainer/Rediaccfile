@@ -3,10 +3,6 @@
 prep() {
     echo "Pulling Portainer image..."
     docker pull portainer/portainer-ce:latest
-    
-    echo "Creating data volume..."
-    docker volume create portainer_data
-    
     return $?
 }
 
@@ -14,25 +10,16 @@ up() {
     if [ -f .env ]; then
         source .env
     fi
-    
+
     echo "Starting Portainer..."
-    docker run -d \
-        --name ${CONTAINER_NAME} \
-        --restart always \
-        -p ${PORTAINER_HTTP_PORT}:9000 \
-        -p ${PORTAINER_HTTPS_PORT}:9443 \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v portainer_data:/data \
-        portainer/portainer-ce:latest
-    
-    echo "Waiting for Portainer to start..."
-    sleep 5
-    
+    docker compose up -d
+
+    echo ""
     echo "Portainer is running!"
     echo "HTTP: http://localhost:${PORTAINER_HTTP_PORT}"
     echo "HTTPS: https://localhost:${PORTAINER_HTTPS_PORT}"
     echo "Please create an admin account on first access."
-    
+
     return $?
 }
 
@@ -40,10 +27,9 @@ down() {
     if [ -f .env ]; then
         source .env
     fi
-    
+
     echo "Stopping Portainer..."
-    docker stop ${CONTAINER_NAME}
-    docker rm ${CONTAINER_NAME}
+    docker compose down -v
     return $?
 }
 
