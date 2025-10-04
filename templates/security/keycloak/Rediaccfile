@@ -4,12 +4,12 @@ prep() {
     echo "Pulling Keycloak and PostgreSQL images..."
     docker pull quay.io/keycloak/keycloak:latest
     docker pull postgres:15-alpine
-    
+
     echo "Creating data directory..."
     mkdir -p ./data
-    chmod 755 ./data
-    
-    return $?
+    chmod 755 ./data 2>/dev/null || true
+
+    return 0
 }
 
 up() {
