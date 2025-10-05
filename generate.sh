@@ -1669,6 +1669,23 @@ show_summary() {
     echo ""
 }
 
+# Copy test results if they exist
+copy_test_results() {
+    log_info "Copying test results"
+
+    if [[ -f "$SOURCE_DIR/test-results.json" ]]; then
+        echo -e "${GREEN}✓${NC} Found test-results.json, copying to build directory"
+        cp "$SOURCE_DIR/test-results.json" "$BUILD_DIR/test-results.json"
+    else
+        echo -e "${YELLOW}⚠${NC} No test-results.json found, creating empty results file"
+        cat > "$BUILD_DIR/test-results.json" << 'EOF'
+{"summary":{"total":0,"passed":0,"failed":0,"skipped":0,"duration":"0s","timestamp":""},"results":[]}
+EOF
+    fi
+
+    echo ""
+}
+
 # Main execution
 main() {
     log_info "Starting JSON Config Generator"
@@ -1690,6 +1707,7 @@ main() {
     process_templates
     process_configs
     generate_website
+    copy_test_results
 
     # Validate output before minification
     if validate_output; then

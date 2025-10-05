@@ -21,6 +21,20 @@
         .stat { text-align: center; }
         .stat-number { font-size: 2rem; font-weight: bold; color: #3498db; }
         .stat-label { color: #7f8c8d; font-size: 0.9rem; }
+        .test-summary { background: #f8f9fa; padding: 0.9375rem 1.25rem; border-radius: 0.625rem; margin-top: 1.25rem; border-left: 0.25rem solid #3498db; }
+        .test-summary-title { font-weight: 600; color: #2c3e50; font-size: 0.95rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+        .test-summary-stats { display: flex; gap: 1.25rem; font-size: 0.875rem; flex-wrap: wrap; }
+        .test-stat { display: flex; align-items: center; gap: 0.375rem; }
+        .test-stat.passed { color: #27ae60; }
+        .test-stat.failed { color: #e74c3c; }
+        .test-stat.skipped { color: #95a5a6; }
+        .test-stat-icon { font-size: 1rem; }
+        .test-timestamp { color: #7f8c8d; font-size: 0.8rem; margin-top: 0.5rem; }
+        .status-badge { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.25rem 0.5rem; border-radius: 0.9375rem; font-size: 0.75rem; font-weight: 500; }
+        .status-badge.passed { background: #d4edda; color: #155724; }
+        .status-badge.failed { background: #f8d7da; color: #721c24; }
+        .status-badge.skipped { background: #e2e3e5; color: #383d41; }
+        .status-badge.untested { background: #fff3cd; color: #856404; }
         .filters { background: white; padding: 1.25rem; border-radius: 0.625rem; margin-bottom: 1.875rem; box-shadow: 0 0.125rem 0.625rem rgba(0,0,0,0.1); }
         .filter-group { display: flex; gap: 0.9375rem; align-items: center; flex-wrap: wrap; }
         .filter-group label { font-weight: 500; color: #2c3e50; }
@@ -399,6 +413,109 @@
             font-size: 1.2rem;
         }
 
+        /* Tests Tab */
+        .tests-content {
+            max-width: 56.25rem;
+        }
+
+        .test-result-card {
+            background: #f8f9fa;
+            border-radius: 0.625rem;
+            padding: 1.25rem;
+            margin-bottom: 1.25rem;
+        }
+
+        .test-result-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .test-overall-status {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        .test-overall-status.passed {
+            color: #27ae60;
+        }
+
+        .test-overall-status.failed {
+            color: #e74c3c;
+        }
+
+        .test-phases {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(8.75rem, 1fr));
+            gap: 0.75rem;
+        }
+
+        .test-phase {
+            background: white;
+            padding: 0.75rem;
+            border-radius: 0.3125rem;
+            border-left: 0.25rem solid #95a5a6;
+        }
+
+        .test-phase.passed {
+            border-left-color: #27ae60;
+        }
+
+        .test-phase.failed {
+            border-left-color: #e74c3c;
+        }
+
+        .test-phase-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            color: #2c3e50;
+            margin-bottom: 0.25rem;
+        }
+
+        .test-phase-status {
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .test-phase-status.passed {
+            color: #27ae60;
+        }
+
+        .test-phase-status.failed {
+            color: #e74c3c;
+        }
+
+        .test-phase-duration {
+            font-size: 0.75rem;
+            color: #7f8c8d;
+            margin-top: 0.25rem;
+        }
+
+        .test-error-message {
+            background: #fff3cd;
+            border-left: 0.25rem solid #ffc107;
+            padding: 0.75rem;
+            border-radius: 0.3125rem;
+            margin-top: 0.75rem;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            color: #856404;
+        }
+
+        .no-test-data {
+            text-align: center;
+            padding: 2.5rem;
+            color: #7f8c8d;
+        }
+
+        .no-test-data-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
         /* Loading State */
         .loading-spinner {
             display: flex;
@@ -527,6 +644,31 @@
                     <div class="stat-label">Categories</div>
                 </div>
             </div>
+            <div class="test-summary" id="test-summary" style="display: none;">
+                <div class="test-summary-title">
+                    <span>🧪</span>
+                    <span>Latest Validation Results</span>
+                </div>
+                <div class="test-summary-stats">
+                    <div class="test-stat passed">
+                        <span class="test-stat-icon">✅</span>
+                        <span><strong id="test-passed">0</strong> Passed</span>
+                    </div>
+                    <div class="test-stat failed">
+                        <span class="test-stat-icon">❌</span>
+                        <span><strong id="test-failed">0</strong> Failed</span>
+                    </div>
+                    <div class="test-stat skipped">
+                        <span class="test-stat-icon">⏭️</span>
+                        <span><strong id="test-skipped">0</strong> Skipped</span>
+                    </div>
+                    <div class="test-stat">
+                        <span class="test-stat-icon">⏱️</span>
+                        <span id="test-duration">0s</span>
+                    </div>
+                </div>
+                <div class="test-timestamp" id="test-timestamp"></div>
+            </div>
         </header>
 
         <div class="filters">
@@ -591,6 +733,9 @@
                 <button class="modal-tab" data-tab="files" onclick="switchTab('files')">
                     📁 Files
                 </button>
+                <button class="modal-tab" data-tab="tests" onclick="switchTab('tests')">
+                    🧪 Tests
+                </button>
                 <button class="modal-tab" data-tab="security" onclick="switchTab('security')">
                     🔒 Security
                 </button>
@@ -625,6 +770,16 @@
                             <div class="file-viewer-content" id="file-content">
                                 <pre><code>Select a file to view its contents</code></pre>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tests Tab -->
+                <div class="tab-content" id="tab-tests">
+                    <div class="tests-content" id="tests-content">
+                        <div class="no-test-data">
+                            <div class="no-test-data-icon">🧪</div>
+                            <p>No test results available for this template</p>
                         </div>
                     </div>
                 </div>
@@ -673,6 +828,7 @@
         let filteredTemplates = [];
         let currentTemplate = null;
         let selectedFileIndex = 0;
+        let testResults = null;
 
         // Initialize marked and highlight.js
         if (typeof marked !== 'undefined') {
@@ -680,6 +836,158 @@
                 breaks: true,
                 gfm: true
             });
+        }
+
+        // Load test results
+        fetch('test-results.json')
+            .then(response => response.json())
+            .then(data => {
+                testResults = data;
+                updateTestSummary(data);
+            })
+            .catch(error => {
+                console.log('Test results not available:', error);
+                testResults = { summary: { total: 0, passed: 0, failed: 0, skipped: 0 }, results: [] };
+            });
+
+        // Update test summary in header
+        function updateTestSummary(data) {
+            if (!data || !data.summary || data.summary.total === 0) {
+                return;
+            }
+
+            const summary = data.summary;
+            document.getElementById('test-summary').style.display = 'block';
+            document.getElementById('test-passed').textContent = summary.passed;
+            document.getElementById('test-failed').textContent = summary.failed;
+            document.getElementById('test-skipped').textContent = summary.skipped;
+            document.getElementById('test-duration').textContent = summary.duration;
+
+            if (summary.timestamp) {
+                const timestamp = new Date(summary.timestamp);
+                const timeAgo = getTimeAgo(timestamp);
+                document.getElementById('test-timestamp').textContent = `Last run: ${timeAgo}`;
+            }
+        }
+
+        // Get human-readable time ago
+        function getTimeAgo(date) {
+            const now = new Date();
+            const seconds = Math.floor((now - date) / 1000);
+
+            if (seconds < 60) return 'just now';
+            if (seconds < 3600) return `${Math.floor(seconds / 60)} minutes ago`;
+            if (seconds < 86400) return `${Math.floor(seconds / 3600)} hours ago`;
+            if (seconds < 604800) return `${Math.floor(seconds / 86400)} days ago`;
+            return date.toLocaleDateString();
+        }
+
+        // Get test status for a template
+        function getTemplateTestStatus(templateId) {
+            if (!testResults || !testResults.results) {
+                return null;
+            }
+
+            // Match by template ID (e.g., "databases_postgresql" or "databases/postgresql")
+            const normalizedId = templateId.replace('_', '/');
+            const testResult = testResults.results.find(r => {
+                const normalizedName = r.name.replace('_', '/');
+                return normalizedName === normalizedId || r.name === templateId;
+            });
+
+            if (!testResult) {
+                return { status: 'untested', icon: '⚪', label: 'Not Tested' };
+            }
+
+            if (testResult.overall === 'passed') {
+                return { status: 'passed', icon: '✅', label: 'Passed' };
+            } else if (testResult.overall === 'failed') {
+                return { status: 'failed', icon: '❌', label: 'Failed' };
+            } else if (testResult.overall === 'skipped') {
+                return { status: 'skipped', icon: '⏭️', label: 'Skipped' };
+            }
+
+            return { status: 'untested', icon: '⚪', label: 'Not Tested' };
+        }
+
+        // Render test results in modal
+        function renderTestResults(templateId) {
+            const testsContent = document.getElementById('tests-content');
+
+            if (!testResults || !testResults.results) {
+                testsContent.innerHTML = `
+                    <div class="no-test-data">
+                        <div class="no-test-data-icon">🧪</div>
+                        <p>Test results are not available yet</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const normalizedId = templateId.replace('_', '/');
+            const testResult = testResults.results.find(r => {
+                const normalizedName = r.name.replace('_', '/');
+                return normalizedName === normalizedId || r.name === templateId;
+            });
+
+            if (!testResult) {
+                testsContent.innerHTML = `
+                    <div class="no-test-data">
+                        <div class="no-test-data-icon">🧪</div>
+                        <p>No test results available for this template</p>
+                        <p style="font-size: 0.9rem; margin-top: 0.5rem;">This template has not been tested yet in CI.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const statusClass = testResult.overall || 'unknown';
+            const statusIcon = statusClass === 'passed' ? '✅' : statusClass === 'failed' ? '❌' : '⏭️';
+            const statusLabel = statusClass === 'passed' ? 'All Tests Passed' : statusClass === 'failed' ? 'Tests Failed' : 'Tests Skipped';
+
+            let phasesHtml = '';
+            const phases = ['prep', 'up', 'health', 'down', 'cleanup'];
+
+            phases.forEach(phase => {
+                if (testResult[phase]) {
+                    const phaseData = testResult[phase];
+                    const phaseStatus = phaseData.status || 'unknown';
+                    const phaseIcon = phaseStatus === 'passed' ? '✅' : '❌';
+
+                    phasesHtml += `
+                        <div class="test-phase ${phaseStatus}">
+                            <div class="test-phase-name">${phase.charAt(0).toUpperCase() + phase.slice(1)}</div>
+                            <div class="test-phase-status ${phaseStatus}">
+                                <span>${phaseIcon}</span>
+                                <span>${phaseStatus}</span>
+                            </div>
+                            ${phaseData.duration ? `<div class="test-phase-duration">${phaseData.duration}</div>` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            let errorHtml = '';
+            if (testResult.error) {
+                errorHtml = `<div class="test-error-message">${escapeHtml(testResult.error)}</div>`;
+            }
+
+            testsContent.innerHTML = `
+                <div class="test-result-card">
+                    <div class="test-result-header">
+                        <div class="test-overall-status ${statusClass}">
+                            ${statusIcon} ${statusLabel}
+                        </div>
+                        <div style="font-size: 0.85rem; color: #7f8c8d;">
+                            Total: ${testResult.duration || 'N/A'}
+                        </div>
+                    </div>
+                    <div class="test-phases">
+                        ${phasesHtml}
+                    </div>
+                    ${errorHtml}
+                </div>
+            `;
         }
 
         // Load templates data
@@ -723,7 +1031,11 @@
             grid.style.display = 'grid';
             noResults.style.display = 'none';
 
-            grid.innerHTML = filteredTemplates.map(template => `
+            grid.innerHTML = filteredTemplates.map(template => {
+                const testStatus = getTemplateTestStatus(template.id);
+                const statusBadge = testStatus ? `<span class="status-badge ${testStatus.status}">${testStatus.icon} ${testStatus.label}</span>` : '';
+
+                return `
                 <div class="template-card">
                     <div class="template-header">
                         <h3 class="template-title">${template.name}</h3>
@@ -731,6 +1043,7 @@
                             <span class="template-category">${template.category}</span>
                             <span class="template-files">${template.file_count} files</span>
                             ${template.has_docker ? '<span class="template-files">Docker</span>' : ''}
+                            ${statusBadge}
                         </div>
                         <p class="template-description">${template.description}</p>
                     </div>
@@ -739,7 +1052,8 @@
                         <button onclick="viewTemplate('${template.id}')" class="btn btn-secondary">View Details</button>
                     </div>
                 </div>
-            `).join('');
+                `;
+            }).join('');
         }
 
         function setupFilters() {
@@ -852,6 +1166,9 @@
                     } else {
                         fileListItems.innerHTML = '<div style="padding: 20px; text-align: center; color: #7f8c8d;">No files available</div>';
                     }
+
+                    // Render test results for this template
+                    renderTestResults(templateId);
                 })
                 .catch(error => {
                     console.error('Error loading template:', error);

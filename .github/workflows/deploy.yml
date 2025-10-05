@@ -329,6 +329,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Download test results
+        if: needs.changes.outputs.templates == 'true'
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: .
+        continue-on-error: true
+
       - name: Install dependencies
         run: |
           sudo apt-get update
@@ -338,6 +346,18 @@ jobs:
         run: |
           chmod +x ./generate.sh
           ./generate.sh
+
+      - name: Copy test results to build directory
+        if: needs.changes.outputs.templates == 'true'
+        run: |
+          if [ -f test-results.json ]; then
+            echo "Copying test results to build directory"
+            cp test-results.json build/
+          else
+            echo "No test results found, creating empty results file"
+            echo '{"summary":{"total":0,"passed":0,"failed":0,"skipped":0,"duration":"0s","timestamp":""},"results":[]}' > build/test-results.json
+          fi
+        continue-on-error: true
 
       - name: Copy CNAME to build directory
         run: |
