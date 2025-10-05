@@ -399,7 +399,6 @@ process_templates() {
 
             # Skip if in skip list
             if should_skip_template "$template_path"; then
-                log_verbose "Skipping template: $template_path"
                 continue
             fi
 
