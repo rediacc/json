@@ -28,6 +28,35 @@ BLUE='\033[0;34m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
+# Skip list for templates
+declare -a SKIP_LIST=()
+
+# Load skip list from .templates-skiplist file
+load_skip_list() {
+    local skiplist_file="$SCRIPT_DIR/.templates-skiplist"
+    if [[ -f "$skiplist_file" ]]; then
+        log_info "Loading skip list from .templates-skiplist"
+        while IFS= read -r line; do
+            # Skip comments and empty lines
+            if [[ ! "$line" =~ ^#.*$ ]] && [[ -n "$line" ]]; then
+                SKIP_LIST+=("$line")
+                log_info "  ⏭️  Will skip: $line"
+            fi
+        done < "$skiplist_file"
+    fi
+}
+
+# Check if template should be skipped
+should_skip_template() {
+    local template_path="$1"
+    for skip in "${SKIP_LIST[@]}"; do
+        if [[ "$template_path" == "$skip" ]]; then
+            return 0  # Should skip
+        fi
+    done
+    return 1  # Should not skip
+}
+
 # Template Processing Functions
 # Converts template directories to JSON format
 
@@ -201,6 +230,15 @@ generate_catalog_json() {
     local template_count=0
     for template_dir in $(find "$templates_dir" -mindepth 2 -maxdepth 2 -type d); do
         if [[ -f "$template_dir/README.md" ]] || [[ -f "$template_dir/docker-compose.yaml" ]] || [[ -f "$template_dir/Rediaccfile" ]]; then
+            local template_name="$(basename "$template_dir")"
+            local category="$(basename $(dirname "$template_dir"))"
+            local template_path="${category}/${template_name}"
+
+            # Skip if in skip list
+            if should_skip_template "$template_path"; then
+                continue
+            fi
+
             template_count=$((template_count + 1))
         fi
     done
@@ -224,6 +262,12 @@ EOF
             local template_name="$(basename "$template_dir")"
             local category_path="$(dirname "$template_dir" | sed 's|.*/templates||' | sed 's|^/||')"
             local category="$(echo "$category_path" | cut -d'/' -f1)"
+            local template_path="${category}/${template_name}"
+
+            # Skip if in skip list
+            if should_skip_template "$template_path"; then
+                continue
+            fi
 
             local metadata=$(extract_template_metadata "$template_dir")
             local title="$(echo "$metadata" | cut -d'|' -f1)"
@@ -350,7 +394,14 @@ process_templates() {
         if [[ -f "$template_dir/README.md" ]] || [[ -f "$template_dir/docker-compose.yaml" ]] || [[ -f "$template_dir/Rediaccfile" ]]; then
             local template_name="$(basename "$template_dir")"
             local category="$(basename $(dirname "$template_dir"))"
+            local template_path="${category}/${template_name}"
             local template_id="${category}_${template_name}"
+
+            # Skip if in skip list
+            if should_skip_template "$template_path"; then
+                log_verbose "Skipping template: $template_path"
+                continue
+            fi
 
             local output_file="$output_dir/$template_id.json"
             generate_template_json "$template_dir" "$output_file"
@@ -1701,6 +1752,9 @@ main() {
         log_error "jq is required for JSON minification"
         exit 1
     fi
+
+    # Load skip list
+    load_skip_list
 
     # Run generation steps
     clean_build

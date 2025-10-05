@@ -174,13 +174,26 @@ jobs:
         run: |
           chmod +x ./test-templates.sh
 
+          # Read skip list from .templates-skiplist
+          SKIP_ARGS=""
+          if [ -f .templates-skiplist ]; then
+            echo "📋 Reading skip list from .templates-skiplist"
+            while IFS= read -r line; do
+              # Skip comments and empty lines
+              if [[ ! "$line" =~ ^#.*$ ]] && [[ -n "$line" ]]; then
+                SKIP_ARGS="$SKIP_ARGS --skip $line"
+                echo "  ⏭️  Skipping: $line"
+              fi
+            done < .templates-skiplist
+          fi
+
           # Check if testing all templates
           if [ "${{ steps.detect.outputs.count }}" == "all" ]; then
-            echo "🔧 Testing ALL templates"
-            ./test-templates.sh --verbose
+            echo "🔧 Testing ALL templates (with skip list)"
+            ./test-templates.sh --verbose $SKIP_ARGS
           else
             # Build test command with specific templates
-            TEST_CMD="./test-templates.sh --verbose"
+            TEST_CMD="./test-templates.sh --verbose $SKIP_ARGS"
 
             while IFS= read -r template; do
               if [ -n "$template" ]; then
