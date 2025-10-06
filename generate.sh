@@ -227,18 +227,10 @@ generate_catalog_json() {
     echo "Generating template catalog..."
 
     # Count valid templates by finding all template directories recursively
+    # Include skipped templates in count for full transparency
     local template_count=0
     for template_dir in $(find "$templates_dir" -mindepth 2 -maxdepth 2 -type d); do
         if [[ -f "$template_dir/README.md" ]] || [[ -f "$template_dir/docker-compose.yaml" ]] || [[ -f "$template_dir/Rediaccfile" ]]; then
-            local template_name="$(basename "$template_dir")"
-            local category="$(basename $(dirname "$template_dir"))"
-            local template_path="${category}/${template_name}"
-
-            # Skip if in skip list
-            if should_skip_template "$template_path"; then
-                continue
-            fi
-
             template_count=$((template_count + 1))
         fi
     done
@@ -264,9 +256,10 @@ EOF
             local category="$(echo "$category_path" | cut -d'/' -f1)"
             local template_path="${category}/${template_name}"
 
-            # Skip if in skip list
+            # Check if template is in skip list
+            local template_status="active"
             if should_skip_template "$template_path"; then
-                continue
+                template_status="skipped"
             fi
 
             local metadata=$(extract_template_metadata "$template_dir")
@@ -301,6 +294,7 @@ EOF
       "file_count": $file_count,
       "has_readme": $has_readme,
       "has_docker": $has_docker,
+      "status": "$template_status",
       "download_url": "templates/$template_id.json",
       "readme": "$(read_file_content "$template_dir/README.md")"
     }

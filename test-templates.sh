@@ -126,6 +126,7 @@ discover_templates() {
     log_info "Discovering templates in $TEMPLATES_DIR"
 
     local templates=()
+    local skip_count=0
 
     # Find all directories with Rediaccfile
     while IFS= read -r -d '' rediaccfile; do
@@ -166,7 +167,7 @@ discover_templates() {
             templates+=("$relative_path")
         else
             log_verbose "Skipping template: $relative_path"
-            ((SKIPPED_TESTS++)) || true
+            ((skip_count++)) || true
         fi
     done < <(find "$TEMPLATES_DIR" -name "Rediaccfile" -type f -print0 2>/dev/null | sort -z)
 
@@ -177,6 +178,8 @@ discover_templates() {
 
     log_info "Found ${#templates[@]} templates to test"
 
+    # Output skip count as first line, then templates
+    echo "SKIP_COUNT:$skip_count"
     printf '%s\n' "${templates[@]}"
 }
 
@@ -669,7 +672,18 @@ main() {
     fi
 
     # Discover templates
-    mapfile -t templates < <(discover_templates)
+    mapfile -t discovery_output < <(discover_templates)
+
+    # Parse skip count from first line
+    if [[ "${discovery_output[0]}" =~ ^SKIP_COUNT:([0-9]+)$ ]]; then
+        SKIPPED_TESTS="${BASH_REMATCH[1]}"
+        # Remove first line (skip count) to get template list
+        templates=("${discovery_output[@]:1}")
+    else
+        # Fallback if format is unexpected
+        templates=("${discovery_output[@]}")
+    fi
+
     TOTAL_TESTS=${#templates[@]}
 
     # Test each template
