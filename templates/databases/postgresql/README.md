@@ -30,13 +30,6 @@ source ./postgres.sh
 ./postgres.sh cleanup_sysbench       # Remove test data
 ```
 
-### Custom Data Generation
-```bash
-./postgres.sh create_custom_table my_users 100000 users
-./postgres.sh create_custom_table inventory 50000 products
-```
-Performance: 100K rows in ~1.4s (72K rows/sec)
-
 ## Configuration
 Edit `.env` to customize:
 - `PGUSER`: PostgreSQL username (default: postgres)
