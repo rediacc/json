@@ -201,7 +201,7 @@ EOF
         cat >> "$output_file" << EOF
     {
       "name": "$(json_escape "$filename")",
-      "path": "$(json_escape "$relative_path")",
+      "path": "$(json_escape "$template_name/$relative_path")",
       "type": "$(get_file_type "$filename")",
       "content": "$(read_file_content "$file")"
     }
