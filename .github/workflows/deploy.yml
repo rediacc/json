@@ -204,7 +204,6 @@ jobs:
             echo "Running: $TEST_CMD"
             eval $TEST_CMD
           fi
-        continue-on-error: true
 
       - name: Check disk space after tests
         if: always() && steps.detect.outputs.count != '0'
