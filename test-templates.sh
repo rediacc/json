@@ -187,6 +187,115 @@ discover_templates() {
 # Health Check Functions
 #==============================================================================
 
+validate_all_containers() {
+    local template_dir=$1
+    local check_healthchecks=${2:-0}
+
+    cd "$template_dir" || return 1
+
+    # Get compose file
+    local compose_file="$template_dir/docker-compose.yaml"
+    if [[ ! -f "$compose_file" ]]; then
+        compose_file="$template_dir/docker-compose.yml"
+    fi
+
+    if [[ ! -f "$compose_file" ]]; then
+        log_error "No docker-compose file found"
+        return 1
+    fi
+
+    # Get expected number of services from docker-compose.yaml
+    local expected_count=$(docker compose config --services 2>/dev/null | wc -l)
+    log_verbose "Expected $expected_count container(s) from compose file"
+
+    # Get actual container states
+    local ps_output=$(docker compose ps --format json 2>/dev/null)
+
+    if [[ -z "$ps_output" ]]; then
+        log_error "No containers found (expected $expected_count)"
+        return 1
+    fi
+
+    # Count containers and collect failures
+    local container_count=0
+    local running_count=0
+    local healthy_count=0
+    local unhealthy_containers=()
+
+    while IFS= read -r container_json; do
+        ((container_count++)) || true
+
+        local name=$(echo "$container_json" | jq -r '.Name')
+        local status=$(echo "$container_json" | jq -r '.Status')
+        local state=$(echo "$container_json" | jq -r '.State')
+        local health=$(echo "$container_json" | jq -r '.Health // empty')
+        local exit_code=$(echo "$container_json" | jq -r '.ExitCode // 0')
+
+        # Check if container is running
+        if [[ "$status" =~ ^Up ]]; then
+            ((running_count++)) || true
+
+            # If healthchecks are being validated, check health status
+            if [[ $check_healthchecks -eq 1 ]]; then
+                if [[ -n "$health" ]] && [[ "$health" == "healthy" ]]; then
+                    ((healthy_count++)) || true
+                elif [[ -n "$health" ]]; then
+                    unhealthy_containers+=("$name: health=$health")
+                else
+                    # Container is running but has no health status (might not have healthcheck defined)
+                    ((healthy_count++)) || true
+                fi
+            fi
+        else
+            # Container is not running
+            if [[ "$state" == "exited" ]]; then
+                unhealthy_containers+=("$name: exited (code=$exit_code)")
+            elif [[ "$state" == "restarting" ]]; then
+                unhealthy_containers+=("$name: restarting")
+            else
+                unhealthy_containers+=("$name: $status")
+            fi
+        fi
+    done < <(echo "$ps_output" | jq -c '.')
+
+    # Validate container count
+    if [[ $container_count -lt $expected_count ]]; then
+        local missing=$((expected_count - container_count))
+        log_error "Missing containers: found $container_count, expected $expected_count (missing $missing)"
+        return 1
+    fi
+
+    # Report unhealthy containers
+    if [[ ${#unhealthy_containers[@]} -gt 0 ]]; then
+        log_error "Unhealthy containers detected:"
+        for container_issue in "${unhealthy_containers[@]}"; do
+            log_error "  - $container_issue"
+        done
+        return 1
+    fi
+
+    # Final validation
+    if [[ $check_healthchecks -eq 1 ]]; then
+        # When checking healthchecks, all containers should be healthy
+        if [[ $healthy_count -eq $expected_count ]]; then
+            log_verbose "All $healthy_count container(s) are healthy"
+            return 0
+        else
+            log_error "Only $healthy_count/$expected_count container(s) are healthy"
+            return 1
+        fi
+    else
+        # When not checking healthchecks, all containers should be running
+        if [[ $running_count -eq $expected_count ]]; then
+            log_verbose "All $running_count container(s) are running"
+            return 0
+        else
+            log_error "Only $running_count/$expected_count container(s) are running"
+            return 1
+        fi
+    fi
+}
+
 check_health() {
     local template_dir=$1
     local timeout=$HEALTH_CHECK_TIMEOUT
@@ -210,48 +319,11 @@ check_health() {
     cd "$template_dir" || return 1
 
     if [[ $has_healthcheck -eq 1 ]]; then
-        # Wait for health checks to pass
+        # Wait for health checks to pass - poll with comprehensive validation
+        log_verbose "Waiting for all containers to be healthy (timeout: ${timeout}s)"
         while [[ $elapsed -lt $timeout ]]; do
-            local unhealthy=0
-            local container_count=0
-
-            # Check container status using docker compose ps with JSON format
-            local ps_output=$(docker compose ps --format json 2>/dev/null)
-
-            if [[ -z "$ps_output" ]]; then
-                log_verbose "No containers found"
-                return 1
-            fi
-
-            while IFS= read -r container_json; do
-                ((container_count++)) || true
-
-                local name=$(echo "$container_json" | jq -r '.Name')
-                local status=$(echo "$container_json" | jq -r '.Status')
-                local health=$(echo "$container_json" | jq -r '.Health // empty')
-
-                # Check if container is not running (status should start with "Up")
-                if [[ ! "$status" =~ ^Up ]]; then
-                    log_verbose "Container not up: $name ($status)"
-                    unhealthy=1
-                    break
-                fi
-
-                # Check health status if health checks are defined
-                if [[ -n "$health" ]] && [[ "$health" != "healthy" ]]; then
-                    log_verbose "Container health not ready: $name ($health)"
-                    unhealthy=1
-                    break
-                fi
-            done < <(echo "$ps_output" | jq -c '.')
-
-            if [[ $container_count -eq 0 ]]; then
-                log_verbose "No containers found"
-                return 1
-            fi
-
-            if [[ $unhealthy -eq 0 ]]; then
-                log_verbose "All containers healthy ($container_count container(s))"
+            if validate_all_containers "$template_dir" 1; then
+                log_verbose "All containers healthy after ${elapsed}s"
                 return 0
             fi
 
@@ -260,19 +332,19 @@ check_health() {
             log_verbose "Waiting for health checks... ${elapsed}s/${timeout}s"
         done
 
-        log_verbose "Health check timeout after ${timeout}s"
+        log_error "Health check timeout after ${timeout}s"
+        # Run validation one more time to get detailed error output
+        validate_all_containers "$template_dir" 1
         return 1
     else
-        # No health checks defined, just verify containers are running
-        log_verbose "No health checks defined, verifying containers are running"
+        # No health checks defined, verify all containers are running
+        log_verbose "No health checks defined, verifying all containers are running"
         sleep 10
 
-        local running=$(docker compose ps --format "{{.Status}}" 2>/dev/null | grep -c "Up" || true)
-        if [[ $running -gt 0 ]]; then
-            log_verbose "Containers are running"
+        if validate_all_containers "$template_dir" 0; then
             return 0
         else
-            log_verbose "No running containers found"
+            log_error "Container validation failed"
             return 1
         fi
     fi
