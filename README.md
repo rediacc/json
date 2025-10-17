@@ -131,12 +131,13 @@ Each template includes a `Rediaccfile` - a bash script that defines the lifecycl
 - Prepares the environment (pull images, create directories, etc.)
 - Runs once before initial setup
 - Good for one-time initialization tasks
+- **Must return the exit code of the last critical command**
 
 ```bash
 prep() {
   docker pull postgres
   mkdir -p data
-  return $?
+  return $?  # Returns exit code of mkdir
 }
 ```
 
@@ -144,11 +145,32 @@ prep() {
 - Starts services gracefully
 - Should handle correct initialization order
 - Recommended for proper service startup
+- **CRITICAL: Must return docker compose exit code, not echo's exit code**
 
 ```bash
+# ✅ CORRECT - Captures docker compose exit code
 up() {
   docker compose up -d
-  return $?
+  return $?  # Returns docker compose exit code
+}
+
+# ❌ WRONG - Returns echo exit code (always 0)
+up() {
+  docker compose up -d
+  echo "Services started"
+  return $?  # Returns echo's exit code, not docker compose!
+}
+
+# ✅ CORRECT - Multiple commands with explicit exit code capture
+up() {
+  docker compose up -d
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo "Failed to start services"
+    return $exit_code
+  fi
+  echo "Services started successfully"
+  return 0
 }
 ```
 
@@ -156,11 +178,12 @@ up() {
 - Stops services gracefully
 - **Must use `-v` flag** to clean up anonymous volumes
 - Ensures proper shutdown and cleanup
+- **Must return docker compose exit code**
 
 ```bash
 down() {
   docker compose down -v  # -v flag is critical!
-  return $?
+  return $?  # Returns docker compose exit code
 }
 ```
 
@@ -169,6 +192,221 @@ down() {
 - **`prep()`**: Ensures environment is ready before first run
 - **`up()`**: Provides consistent, reproducible startup behavior
 - **`down()`**: Prevents orphaned Docker volumes and ensures clean teardown
+
+#### Critical: Return Value Requirements
+
+**All functions MUST return the exit code of their primary command (usually docker compose).**
+
+The CI pipeline and production systems rely on these exit codes to detect failures:
+- `return 0` = Success
+- `return non-zero` = Failure
+
+**Common Mistake:** Returning the exit code of `echo` instead of `docker compose`:
+
+```bash
+# ❌ WRONG - CI thinks this succeeded even if docker compose failed!
+up() {
+  docker compose up -d
+  echo "Waiting for services..."
+  sleep 10
+  echo "Services ready"
+  return $?  # Returns exit code of last echo (always 0)
+}
+
+# ✅ CORRECT - Capture docker compose exit code first
+up() {
+  docker compose up -d
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    return $exit_code
+  fi
+  echo "Waiting for services..."
+  sleep 10
+  echo "Services ready"
+  return 0
+}
+```
+
+---
+
+## Health Check Requirements
+
+**Critical:** All services in docker-compose.yaml must define healthcheck configurations to ensure proper container validation in CI/CD.
+
+### Why Health Checks Matter
+
+The CI pipeline validates that **ALL containers** are running and healthy before marking a template as passed. Without health checks:
+- Templates fall back to weak validation (any container running = pass)
+- Partial failures can go undetected (e.g., 1 of 3 containers failed but test passes)
+- Production deployments may fail in ways not caught by CI
+
+### ✅ DO: Define Health Checks for All Services
+
+```yaml
+services:
+  db:
+    image: postgres:16
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    volumes:
+      - ./data:/var/lib/postgresql/data
+
+  web:
+    image: nginx:latest
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    depends_on:
+      db:
+        condition: service_healthy  # Wait for db to be healthy
+```
+
+### Health Check Parameters Explained
+
+- **`test`**: Command to check service health
+  - `CMD-SHELL`: Run command in shell (use for complex commands)
+  - `CMD`: Run command directly (more efficient)
+  - Exit code 0 = healthy, non-zero = unhealthy
+- **`interval`**: Time between health checks (default: 30s)
+  - Use 10s for fast-starting services
+  - Use 30s for slower services
+- **`timeout`**: Max time for health check command to complete (default: 30s)
+  - Use 5s for local checks (database ready, HTTP ping)
+  - Use longer for remote checks
+- **`retries`**: Consecutive failures before marking unhealthy (default: 3)
+  - Use 3-5 for most services
+  - Use more for services with slow initialization
+- **`start_period`**: Grace period during container startup (default: 0s)
+  - Use 30-60s for databases
+  - Use 10-20s for web services
+  - Use 120s+ for heavy applications (GitLab, etc.)
+
+### Common Health Check Patterns
+
+```yaml
+# Database services (use service-specific CLI tools)
+healthcheck:
+  test: ["CMD-SHELL", "<service-cli-check-command>"]  # e.g., pg_isready, mysqladmin ping, redis-cli ping
+  interval: 10s
+  timeout: 5s
+  retries: 5
+  start_period: 30s
+
+# Web/HTTP services (use curl, wget, or nc)
+healthcheck:
+  test: ["CMD", "curl", "-f", "http://localhost:<port>/"]
+  interval: 10s
+  timeout: 5s
+  retries: 3
+  start_period: 15s
+
+# Services with health endpoints
+healthcheck:
+  test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:<port>/-/health"]
+  interval: 10s
+  timeout: 5s
+  retries: 3
+  start_period: 15s
+
+# TCP port check (when no HTTP tools available)
+healthcheck:
+  test: ["CMD-SHELL", "nc -z localhost <port> || exit 1"]
+  interval: 10s
+  timeout: 5s
+  retries: 3
+  start_period: 10s
+```
+
+### Using depends_on with Health Checks
+
+Always use `condition: service_healthy` when services depend on each other:
+
+```yaml
+services:
+  database:
+    image: <database-image>
+    healthcheck:
+      test: ["CMD-SHELL", "<health-check-command>"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  application:
+    image: <app-image>
+    depends_on:
+      database:
+        condition: service_healthy  # Wait for database to be healthy first
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:<port>/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+```
+
+### Health Check Checklist
+
+- [ ] Every service has a `healthcheck:` definition
+- [ ] Health check commands are appropriate for the service type
+- [ ] `start_period` accounts for service initialization time
+- [ ] `depends_on` uses `condition: service_healthy` where applicable
+- [ ] Health checks validated with `docker compose ps` (Status shows "healthy")
+- [ ] CI tests pass with all containers reported as healthy
+
+### Testing Health Checks Locally
+
+```bash
+# Start services
+docker compose up -d
+
+# Watch health status (repeat until all show "healthy")
+docker compose ps
+
+# Example output:
+# NAME                    STATUS
+# myapp-db-1             Up 30 seconds (healthy)
+# myapp-web-1            Up 15 seconds (healthy)
+
+# If a service is unhealthy, check logs
+docker compose logs [service-name]
+
+# View detailed health check results
+docker inspect [container-name] | jq '.[].State.Health'
+```
+
+### ❌ What NOT to Do
+
+```yaml
+# BAD: No health check defined
+services:
+  myservice:
+    image: <image>
+    # ❌ Missing healthcheck - CI will use weak validation
+
+# BAD: Missing start_period for slow-starting services
+services:
+  myservice:
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      # ❌ Missing start_period - service may be marked unhealthy during startup
+
+# BAD: Using depends_on without health condition
+services:
+  app:
+    depends_on:
+      - database  # ❌ Only waits for container start, not readiness
+```
 
 ---
 

@@ -27,6 +27,7 @@ I need you to create a new Rediacc template based on the following project:
      - Docker volume best practices (relative paths, no named volumes)
      - Anonymous volume prevention (tmpfs for images with built-in VOLUMEs)
      - Proper cleanup with `docker compose down -v`
+     - **Health check requirements for ALL services** (see README.md)
 
 3. **Template Structure:**
    Create a complete template with:
@@ -42,10 +43,19 @@ I need you to create a new Rediacc template based on the following project:
    - ❌ Never use named volumes
    - ✅ Override anonymous volumes with tmpfs if needed
    - ✅ Use `docker compose down -v` in down() function
+   - ✅ **CRITICAL: All Rediaccfile functions must return docker compose exit codes, not echo exit codes**
+     - Capture `docker compose` exit code immediately: `local exit_code=$?`
+     - Return the captured exit code, not the exit code of subsequent echo statements
+     - See README.md "Return Value Requirements" section for examples
    - ✅ **NO fixed host port mappings** - Use container-only ports
      - ✅ Good: `ports: - "5432"` (Docker assigns random host port)
      - ❌ Bad: `ports: - "5432:5432"` or `- "${PORT}:5432"` (conflicts when cloning)
-   - ✅ Include proper health checks where applicable
+   - ✅ **REQUIRED: Define healthcheck for EVERY service in docker-compose.yaml**
+     - All services must have `healthcheck:` with test, interval, timeout, retries, start_period
+     - Use appropriate health check commands (pg_isready, curl, redis-cli, etc.)
+     - Set proper `start_period` based on service initialization time
+     - Use `depends_on` with `condition: service_healthy` for service dependencies
+     - See README.md "Health Check Requirements" section for examples
    - ✅ Document all required ports and dependencies
    - ✅ Provide clear setup instructions
 
@@ -109,7 +119,10 @@ I need you to create a new Rediacc template based on the following project:
    - Test that `docker volume ls` shows NO volumes after starting services
    - Verify all data persists in relative directories
    - Confirm `down()` function cleans up properly
-   - Check that services start and health checks pass
+   - **Verify ALL services have health checks defined in docker-compose.yaml**
+   - **Confirm `docker compose ps` shows ALL services as "healthy"** (not just "Up")
+   - Wait for health checks to pass (may take 30-60s depending on start_period)
+   - If any service shows "Up (health: starting)" for too long, increase start_period
 
 **Example Template Categories:**
 - **databases**: PostgreSQL, MySQL, MongoDB, Redis, Elasticsearch
