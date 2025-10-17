@@ -69,9 +69,18 @@ services:
     ports:
       - "1337"
     depends_on:
-      - kong-database
+      kong:
+        condition: service_healthy
+      kong-database:
+        condition: service_healthy
     networks:
       - kong-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:1337 || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
 
 networks:
   kong-net:
