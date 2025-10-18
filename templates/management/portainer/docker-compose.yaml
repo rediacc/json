@@ -10,11 +10,11 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./data:/data
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9000/api/status"]
+      test: ["CMD-SHELL", "timeout 5 sh -c '</dev/tcp/localhost/9000' || exit 1"]
       interval: 30s
       timeout: 10s
-      retries: 3
-      start_period: 30s
+      retries: 5
+      start_period: 120s
     networks:
       - portainer-network
 

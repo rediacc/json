@@ -19,6 +19,25 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+      start_period: 30s
+
+  kong-migrations:
+    image: kong:latest
+    container_name: ${CONTAINER_NAME}-migrations
+    command: kong migrations bootstrap
+    restart: on-failure
+    environment:
+      KONG_DATABASE: postgres
+      KONG_PG_HOST: kong-database
+      KONG_PG_PORT: 5432
+      KONG_PG_DATABASE: ${POSTGRES_DB}
+      KONG_PG_USER: ${POSTGRES_USER}
+      KONG_PG_PASSWORD: ${POSTGRES_PASSWORD}
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    networks:
+      - kong-net
 
   kong:
     image: kong:latest
@@ -45,13 +64,34 @@ services:
     depends_on:
       kong-database:
         condition: service_healthy
+      kong-migrations:
+        condition: service_completed_successfully
     networks:
       - kong-net
     healthcheck:
       test: ["CMD", "kong", "health"]
       interval: 10s
-      timeout: 5s
-      retries: 5
+      timeout: 10s
+      retries: 10
+      start_period: 30s
+
+  konga-prepare:
+    image: pantsel/konga:latest
+    container_name: ${CONTAINER_NAME}-konga-prepare
+    command: "-c prepare -a postgres -u postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@kong-database:5432/${POSTGRES_DB}"
+    restart: on-failure
+    environment:
+      DB_ADAPTER: postgres
+      DB_HOST: kong-database
+      DB_PORT: 5432
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      DB_DATABASE: ${POSTGRES_DB}
+    depends_on:
+      kong-database:
+        condition: service_healthy
+    networks:
+      - kong-net
 
   konga:
     image: pantsel/konga:latest
@@ -69,10 +109,12 @@ services:
     ports:
       - "1337"
     depends_on:
-      kong:
-        condition: service_healthy
       kong-database:
         condition: service_healthy
+      kong:
+        condition: service_healthy
+      konga-prepare:
+        condition: service_completed_successfully
     networks:
       - kong-net
     healthcheck:
@@ -80,8 +122,8 @@ services:
       interval: 30s
       timeout: 10s
       retries: 5
-      start_period: 30s
+      start_period: 60s
 
 networks:
   kong-net:
-    external: true
+    driver: bridge
