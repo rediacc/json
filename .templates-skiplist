@@ -11,6 +11,5 @@
 # databases/mssql
 # networking/cloud-switch
 
-api-gateway/kong
 networking/cloud-switch
 search/elasticsearch
