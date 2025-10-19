@@ -31,6 +31,7 @@ services:
       ME_CONFIG_MONGODB_URL: mongodb://${MONGO_ROOT_USERNAME}:${MONGO_ROOT_PASSWORD}@mongodb:27017/
       ME_CONFIG_BASICAUTH_USERNAME: ${ME_USERNAME}
       ME_CONFIG_BASICAUTH_PASSWORD: ${ME_PASSWORD}
+      ME_CONFIG_MONGODB_ENABLE_ADMIN: "true"
     ports:
       - "8081"
     networks:
@@ -43,7 +44,7 @@ services:
       interval: 10s
       timeout: 10s
       retries: 5
-      start_period: 90s
+      start_period: 120s
 
 networks:
   mongodb-network:
