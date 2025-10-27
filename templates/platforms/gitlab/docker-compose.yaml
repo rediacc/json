@@ -3,6 +3,7 @@ services:
     image: gitlab/gitlab-ce:latest
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     hostname: ${GITLAB_HOSTNAME}
     environment:
       GITLAB_OMNIBUS_CONFIG: |

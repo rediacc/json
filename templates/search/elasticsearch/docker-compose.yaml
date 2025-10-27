@@ -3,6 +3,7 @@ services:
     image: elasticsearch:8.11.0
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     environment:
       - discovery.type=single-node
       - xpack.security.enabled=${ES_SECURITY_ENABLED}
@@ -31,6 +32,7 @@ services:
     image: kibana:8.11.0
     container_name: ${CONTAINER_NAME}-kibana
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - SERVER_NAME=${KIBANA_SERVER_NAME}

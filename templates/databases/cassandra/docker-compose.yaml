@@ -3,6 +3,7 @@ services:
     image: cassandra:5.0
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     environment:
       CASSANDRA_CLUSTER_NAME: ${CASSANDRA_CLUSTER_NAME}
       CASSANDRA_DC: ${CASSANDRA_DC}

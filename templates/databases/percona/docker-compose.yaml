@@ -2,6 +2,7 @@ services:
   db:
     image: percona:8.0
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     env_file:
       - .env
     environment:

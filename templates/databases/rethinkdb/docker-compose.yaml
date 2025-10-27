@@ -2,6 +2,7 @@ services:
   rethinkdb:
     image: rethinkdb:latest
     container_name: ${CONTAINER_NAME}
+    network_mode: "${NETWORK_MODE:-bridge}"
     command: rethinkdb --bind all --cache-size ${RETHINKDB_CACHE_SIZE}
     ports:
       - "8080"    # Web admin interface

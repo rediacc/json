@@ -3,6 +3,7 @@ services:
     image: redis:7-alpine
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     command: redis-server --requirepass ${REDIS_PASSWORD} --maxmemory ${REDIS_MAXMEMORY} --maxmemory-policy ${REDIS_MAXMEMORY_POLICY}
     ports:
       - "6379"

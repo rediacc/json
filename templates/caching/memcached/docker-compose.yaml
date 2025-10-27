@@ -3,6 +3,7 @@ services:
     image: memcached:latest
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     command:
       - memcached
       - -m

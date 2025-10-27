@@ -2,6 +2,7 @@ services:
   cratedb:
     image: crate:latest
     container_name: ${CONTAINER_NAME}
+    network_mode: "${NETWORK_MODE:-bridge}"
     command: >
       crate
       -Cnetwork.host=0.0.0.0

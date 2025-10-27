@@ -1,6 +1,7 @@
 services:
   db:
     container_name: postgres_sysbench_template
+    network_mode: "${NETWORK_MODE:-bridge}"
     env_file:
       - .env
     environment:

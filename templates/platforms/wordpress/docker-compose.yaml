@@ -3,6 +3,7 @@ services:
   wordpress:
     image: wordpress
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     ports:
       - 80
     environment:
@@ -25,6 +26,7 @@ services:
   db:
     image: mysql:8.0
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     environment:
       MYSQL_DATABASE: exampledb
       MYSQL_USER: exampleuser

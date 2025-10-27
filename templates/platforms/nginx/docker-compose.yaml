@@ -3,6 +3,7 @@ services:
     image: nginx:latest
     container_name: ${CONTAINER_NAME}
     restart: always
+    network_mode: "${NETWORK_MODE:-bridge}"
     ports:
       - "80"
     networks:
