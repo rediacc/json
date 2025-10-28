@@ -19,8 +19,6 @@ services:
       - "9300"
     volumes:
       - ./data:/usr/share/elasticsearch/data
-    networks:
-      - elastic-network
     healthcheck:
       test: ["CMD-SHELL", "curl -sf http://localhost:9200/_cluster/health | grep -E 'green|yellow' || exit 1"]
       interval: 30s
@@ -39,8 +37,6 @@ services:
       - SERVER_HOST=0.0.0.0
     ports:
       - "5601"
-    networks:
-      - elastic-network
     depends_on:
       elasticsearch:
         condition: service_healthy
@@ -50,7 +46,3 @@ services:
       timeout: 10s
       retries: 5
       start_period: 60s
-
-networks:
-  elastic-network:
-    driver: bridge

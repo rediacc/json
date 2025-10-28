@@ -22,8 +22,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    networks:
-      - monitoring-network
 
   grafana:
     image: grafana/grafana:latest
@@ -46,8 +44,6 @@ services:
       timeout: 10s
       retries: 3
       start_period: 30s
-    networks:
-      - monitoring-network
     depends_on:
       prometheus:
         condition: service_healthy
@@ -74,9 +70,3 @@ services:
       timeout: 10s
       retries: 3
       start_period: 15s
-    networks:
-      - monitoring-network
-
-networks:
-  monitoring-network:
-    driver: bridge

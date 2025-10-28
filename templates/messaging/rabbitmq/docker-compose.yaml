@@ -14,14 +14,8 @@ services:
     volumes:
       - ./data:/var/lib/rabbitmq
       - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
-    networks:
-      - rabbitmq-network
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-networks:
-  rabbitmq-network:
-    driver: bridge

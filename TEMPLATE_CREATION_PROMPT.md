@@ -50,6 +50,9 @@ I need you to create a new Rediacc template based on the following project:
    - ✅ **NO fixed host port mappings** - Use container-only ports
      - ✅ Good: `ports: - "5432"` (Docker assigns random host port)
      - ❌ Bad: `ports: - "5432:5432"` or `- "${PORT}:5432"` (conflicts when cloning)
+   - ✅ **Use `network_mode` OR `networks`, never both** (mutually exclusive)
+     - ✅ Good: `network_mode: "${NETWORK_MODE:-bridge}"` (no networks section)
+     - ❌ Bad: Both `network_mode` AND `networks:` defined (invalid compose)
    - ✅ **REQUIRED: Define healthcheck for EVERY service in docker-compose.yaml**
      - All services must have `healthcheck:` with test, interval, timeout, retries, start_period
      - Use appropriate health check commands (pg_isready, curl, redis-cli, etc.)

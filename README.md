@@ -513,6 +513,29 @@ services:
 
 **Why:** When repositories are cloned on the same machine, fixed host ports would conflict. Docker's automatic port assignment ensures each clone gets unique ports.
 
+### Network Configuration
+
+**Critical:** Use `network_mode` OR `networks`, never both. They are mutually exclusive in Docker Compose.
+
+```yaml
+# ✅ GOOD - Using network_mode for simple bridge networking
+services:
+  app:
+    network_mode: "${NETWORK_MODE:-bridge}"
+    # No 'networks:' section
+
+# ❌ BAD - Both network_mode and networks (invalid)
+services:
+  app:
+    network_mode: "${NETWORK_MODE:-bridge}"
+    networks:
+      - mynetwork  # ❌ Conflicts with network_mode
+```
+
+**When to use:**
+- **`network_mode`**: Simple cases, checkpoint/restore support, host networking
+- **`networks`**: Custom networks, service isolation, DNS resolution between services
+
 ### Quick Checklist
 
 - [ ] All volumes use relative paths (`./data`, `./config`, etc.)
@@ -520,6 +543,7 @@ services:
 - [ ] Images with built-in VOLUMEs explicitly override them with tmpfs or bind mounts
 - [ ] `down()` function uses `docker compose down -v`
 - [ ] Port mappings use container-only format (`"5432"` not `"5432:5432"`)
+- [ ] Using `network_mode` OR `networks`, not both
 - [ ] Test with volume detection: warning should NOT appear
 
 ### Testing Your Template
