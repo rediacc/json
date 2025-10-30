@@ -21,8 +21,8 @@
       "order": 4
     },
     {
-      "id": "advanced",
-      "name": "Advanced Features",
+      "id": "pro_features",
+      "name": "Pro Features",
       "order": 5
     }
   ],
@@ -36,9 +36,9 @@
       "order": 1,
       "values": {
         "community": "community",
-        "advanced": "priority",
-        "premium": "priority",
-        "elite": "dedicated_account"
+        "pro": "priority",
+        "business": "priority",
+        "enterprise": "dedicated_account"
       }
     },
     {
@@ -50,9 +50,9 @@
       "order": 2,
       "values": {
         "community": "web",
-        "advanced": "cli",
-        "premium": "cli",
-        "elite": "cli"
+        "pro": "cli",
+        "business": "cli",
+        "enterprise": "cli"
       }
     },
     {
@@ -64,9 +64,9 @@
       "order": 3,
       "values": {
         "community": false,
-        "advanced": "basic",
-        "premium": "full",
-        "elite": "full"
+        "pro": "basic",
+        "business": "full",
+        "enterprise": "full"
       }
     },
     {
@@ -78,9 +78,9 @@
       "order": 4,
       "values": {
         "community": "5",
-        "advanced": "10",
-        "premium": "25",
-        "elite": "100"
+        "pro": "10",
+        "business": "25",
+        "enterprise": "100"
       }
     },
     {
@@ -92,9 +92,9 @@
       "order": 5,
       "values": {
         "community": "10",
-        "advanced": "25",
-        "premium": "75",
-        "elite": "300"
+        "pro": "25",
+        "business": "75",
+        "enterprise": "300"
       }
     },
     {
@@ -106,9 +106,9 @@
       "order": 6,
       "values": {
         "community": true,
-        "advanced": true,
-        "premium": true,
-        "elite": true
+        "pro": true,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -120,9 +120,9 @@
       "order": 7,
       "values": {
         "community": "10",
-        "advanced": "25",
-        "premium": "100",
-        "elite": "500"
+        "pro": "25",
+        "business": "100",
+        "enterprise": "500"
       }
     },
     {
@@ -134,9 +134,9 @@
       "order": 8,
       "values": {
         "community": "1",
-        "advanced": "4",
-        "premium": "8",
-        "elite": "100"
+        "pro": "4",
+        "business": "8",
+        "enterprise": "100"
       }
     },
     {
@@ -148,9 +148,9 @@
       "order": 9,
       "values": {
         "community": "5",
-        "advanced": "10",
-        "premium": "20",
-        "elite": "50"
+        "pro": "10",
+        "business": "20",
+        "enterprise": "50"
       }
     },
     {
@@ -163,9 +163,9 @@
       "order": 9,
       "values": {
         "community": "2",
-        "advanced": "24",
-        "premium": "72",
-        "elite": "unlimited"
+        "pro": "24",
+        "business": "72",
+        "enterprise": "unlimited"
       }
     },
     {
@@ -177,9 +177,9 @@
       "order": 10,
       "values": {
         "community": "5",
-        "advanced": "10",
-        "premium": "20",
-        "elite": "50"
+        "pro": "10",
+        "business": "20",
+        "enterprise": "50"
       }
     },
     {
@@ -191,9 +191,9 @@
       "order": 11,
       "values": {
         "community": "5",
-        "advanced": "15",
-        "premium": "40",
-        "elite": "150"
+        "pro": "15",
+        "business": "40",
+        "enterprise": "150"
       }
     },
     {
@@ -205,9 +205,9 @@
       "order": 12,
       "values": {
         "community": "cloud",
-        "advanced": "cloud",
-        "premium": "external",
-        "elite": "external"
+        "pro": "cloud",
+        "business": "external",
+        "enterprise": "external"
       }
     },
     {
@@ -219,9 +219,9 @@
       "order": 13,
       "values": {
         "community": "10",
-        "advanced": "25",
-        "premium": "75",
-        "elite": "300"
+        "pro": "25",
+        "business": "75",
+        "enterprise": "300"
       }
     },
     {
@@ -233,9 +233,9 @@
       "order": 14,
       "values": {
         "community": "5",
-        "advanced": "10",
-        "premium": "25",
-        "elite": "100"
+        "pro": "10",
+        "business": "25",
+        "enterprise": "100"
       }
     },
     {
@@ -247,9 +247,9 @@
       "order": 15,
       "values": {
         "community": "5",
-        "advanced": "10",
-        "premium": "20",
-        "elite": "50"
+        "pro": "10",
+        "business": "20",
+        "enterprise": "50"
       }
     },
     {
@@ -261,9 +261,9 @@
       "order": 16,
       "values": {
         "community": false,
-        "advanced": true,
-        "premium": true,
-        "elite": true
+        "pro": true,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -275,9 +275,9 @@
       "order": 17,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": true,
-        "elite": true
+        "pro": false,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -289,9 +289,9 @@
       "order": 18,
       "values": {
         "community": "7",
-        "advanced": "90",
-        "premium": "180",
-        "elite": "365"
+        "pro": "90",
+        "business": "180",
+        "enterprise": "365"
       },
       "unit": "days"
     },
@@ -304,9 +304,9 @@
       "order": 19,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": true,
-        "elite": true
+        "pro": false,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -318,9 +318,9 @@
       "order": 20,
       "values": {
         "community": "7",
-        "advanced": "30",
-        "premium": "90",
-        "elite": "365"
+        "pro": "30",
+        "business": "90",
+        "enterprise": "365"
       },
       "unit": "days"
     },
@@ -333,9 +333,9 @@
       "order": 21,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": true,
-        "elite": true
+        "pro": false,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -347,37 +347,37 @@
       "order": 22,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": true,
-        "elite": true
+        "pro": false,
+        "business": true,
+        "enterprise": true
       }
     },
     {
       "id": "on_premise_installation",
       "name": "tier.feature.on_premise_installation",
-      "category": "advanced",
+      "category": "pro_features",
       "tooltip": "Install and run entirely within your own infrastructure",
       "displayType": "boolean",
       "order": 24,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": false,
-        "elite": true
+        "pro": false,
+        "business": false,
+        "enterprise": true
       }
     },
     {
       "id": "custom_branding",
       "name": "tier.feature.custom_branding",
-      "category": "advanced",
+      "category": "pro_features",
       "tooltip": "Customize branding with your organization's identity",
       "displayType": "boolean",
       "order": 25,
       "values": {
         "community": false,
-        "advanced": true,
-        "premium": true,
-        "elite": true
+        "pro": true,
+        "business": true,
+        "enterprise": true
       }
     },
     {
@@ -389,9 +389,9 @@
       "order": 26,
       "values": {
         "community": false,
-        "advanced": false,
-        "premium": false,
-        "elite": true
+        "pro": false,
+        "business": false,
+        "enterprise": true
       }
     }
   ],
@@ -421,16 +421,16 @@
       "name": "tier.community.name",
       "order": 1
     },
-    "advanced": {
-      "name": "tier.advanced.name",
+    "pro": {
+      "name": "Pro",
       "order": 2
     },
-    "premium": {
-      "name": "tier.premium.name",
+    "business": {
+      "name": "Business",
       "order": 3
     },
-    "elite": {
-      "name": "tier.elite.name",
+    "enterprise": {
+      "name": "Enterprise",
       "order": 4
     }
   }

@@ -5,15 +5,15 @@
       "originalPrice": 799,
       "period": null
     },
-    "advanced": {
+    "pro": {
       "price": 2399,
       "period": "perMonth"
     },
-    "premium": {
+    "business": {
       "price": 3899,
       "period": "perMonth"
     },
-    "elite": {
+    "enterprise": {
       "price": 6999,
       "period": "perMonth"
     }
@@ -23,15 +23,15 @@
       "multiplier": 1.0,
       "savePercent": "0%"
     },
-    "advanced": {
+    "pro": {
       "multiplier": 0.833,
       "savePercent": "17%"
     },
-    "premium": {
-      "multiplier": 0.770,
+    "business": {
+      "multiplier": 0.77,
       "savePercent": "23%"
     },
-    "elite": {
+    "enterprise": {
       "multiplier": 0.714,
       "savePercent": "29%"
     }
@@ -52,7 +52,7 @@
       "name": "pricing.cyberMonday",
       "startDate": "2025-12-01",
       "endDate": "2025-12-01",
-      "discount": 0.30,
+      "discount": 0.3,
       "message": "pricing.cyberMondayMessage",
       "icon": "💻",
       "bannerColor": "#4A90E2",
@@ -63,7 +63,7 @@
       "name": "pricing.newYearSale",
       "startDate": "2025-12-31",
       "endDate": "2026-01-07",
-      "discount": 0.20,
+      "discount": 0.2,
       "message": "pricing.newYearMessage",
       "icon": "🎆",
       "bannerColor": "#FFD700",
@@ -85,7 +85,7 @@
       "name": "pricing.earlyBirdSpecial",
       "startDate": "2025-08-03",
       "endDate": "2025-08-10",
-      "discount": 0.10,
+      "discount": 0.1,
       "message": "pricing.earlyBirdMessage",
       "icon": "🐦",
       "bannerColor": "#FFA07A",
@@ -112,22 +112,22 @@
       "ctaLink": "#demo",
       "ctaVariant": "secondary"
     },
-    "advanced": {
-      "name": "pricing.tiers.advanced.title",
+    "pro": {
+      "name": "pricing.tiers.pro.title",
       "isPopular": false,
       "ctaText": "common.startFreeTrial",
       "ctaLink": "#demo",
       "ctaVariant": "primary"
     },
-    "premium": {
-      "name": "pricing.tiers.premium.title",
+    "business": {
+      "name": "pricing.tiers.business.title",
       "isPopular": false,
       "ctaText": "common.startFreeTrial",
       "ctaLink": "#demo",
       "ctaVariant": "primary"
     },
-    "elite": {
-      "name": "pricing.tiers.elite.title",
+    "enterprise": {
+      "name": "pricing.tiers.enterprise.title",
       "isPopular": false,
       "ctaText": "common.getCustomRoadmap",
       "ctaLink": "#demo",
