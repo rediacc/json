@@ -56,3 +56,4 @@ templates/*/*/prometheus/
 
 # Test results
 test-results.json
+test-artifacts/

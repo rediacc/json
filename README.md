@@ -79,6 +79,19 @@ Results are saved to `test-results.json` with detailed information:
 }
 ```
 
+### Failure Diagnostics
+
+When a template fails at any lifecycle stage, the test harness now captures a full diagnostic snapshot in `test-artifacts/`:
+
+- Docker Compose config (`docker-compose.config`)
+- `docker compose ps` output (text + JSON)
+- Aggregated `docker compose logs`
+- Per-container logs and `docker inspect` details
+
+Artifacts are grouped by template and timestamp so each failure is isolated. The directory is ignored by git locally and uploaded to the `test-results` artifact in CI for easy download. You can override the destination with `ARTIFACTS_DIR=/custom/path ./test-templates.sh`.
+
+> Note: If a template does not set `NETWORK_MODE`, the harness automatically provisions a temporary user-defined bridge network to ensure modern Docker DNS resolution. The network is deleted during cleanup.
+
 ### CI Integration
 
 The test workflow runs on:

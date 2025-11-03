@@ -216,8 +216,11 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: test-results
-          path: test-results.json
+          path: |
+            test-results.json
+            test-artifacts/
           retention-days: 30
+          if-no-files-found: warn
 
       - name: Display test summary
         if: always() && steps.detect.outputs.count != '0'
