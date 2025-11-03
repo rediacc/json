@@ -28,6 +28,7 @@ CONTINUE_ON_ERROR=${CONTINUE_ON_ERROR:-1}
 # Get script directory
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 TEMPLATES_DIR="$SCRIPT_DIR/templates"
+ARTIFACTS_DIR="${ARTIFACTS_DIR:-$SCRIPT_DIR/test-artifacts}"
 
 # Colors for output
 RED='\033[0;31m'
@@ -417,6 +418,67 @@ cleanup_volumes() {
 }
 
 #==============================================================================
+# Diagnostic Collection Functions
+#==============================================================================
+
+initialize_artifacts() {
+    if [[ -d "$ARTIFACTS_DIR" ]]; then
+        rm -rf "$ARTIFACTS_DIR" >/dev/null 2>&1 || true
+    fi
+
+    mkdir -p "$ARTIFACTS_DIR" >/dev/null 2>&1 || true
+    touch "$ARTIFACTS_DIR/.keep" >/dev/null 2>&1 || true
+}
+
+collect_template_artifacts() {
+    local template_path=$1
+    local template_dir=$2
+    local stage=${3:-unknown}
+    local sanitized_template="${template_path//\//__}"
+    local template_artifact_dir="$ARTIFACTS_DIR/$sanitized_template"
+    local timestamp stage_dir containers
+
+    mkdir -p "$template_artifact_dir" >/dev/null 2>&1 || true
+
+    timestamp=$(date -u +%Y%m%dT%H%M%SZ)
+    stage_dir="$template_artifact_dir/${timestamp}_${stage}"
+    mkdir -p "$stage_dir" >/dev/null 2>&1 || true
+
+    log_warn "Collecting diagnostics for $template_path (stage: $stage) -> $stage_dir"
+
+    {
+        echo "template_path=$template_path"
+        echo "stage=$stage"
+        echo "captured_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+    } > "$stage_dir/metadata.txt"
+
+    cp -f "$template_dir/Rediaccfile" "$template_artifact_dir/Rediaccfile" >/dev/null 2>&1 || true
+    cp -f "$template_dir/docker-compose.yaml" "$template_artifact_dir/docker-compose.yaml" >/dev/null 2>&1 || true
+    cp -f "$template_dir/docker-compose.yml" "$template_artifact_dir/docker-compose.yml" >/dev/null 2>&1 || true
+
+    (
+        set +e
+        cd "$template_dir" 2>/dev/null || exit 0
+
+        docker compose config > "$stage_dir/docker-compose.config" 2>&1 || true
+        docker compose ps > "$stage_dir/docker-compose.ps.txt" 2>&1 || true
+        docker compose ps --format json > "$stage_dir/docker-compose.ps.json" 2>&1 || true
+        docker compose logs --no-color > "$stage_dir/docker-compose.logs" 2>&1 || true
+
+        containers=$(docker compose ps -q 2>/dev/null | tr '\n' ' ')
+        containers=$(echo "$containers" | xargs)
+
+        if [[ -n "$containers" ]]; then
+            docker inspect $containers > "$stage_dir/docker-inspect.json" 2>&1 || true
+            for container in $containers; do
+                [[ -z "$container" ]] && continue
+                docker logs "$container" > "$stage_dir/${container}.log" 2>&1 || true
+            done
+        fi
+    )
+}
+
+#==============================================================================
 # Test Execution Functions
 #==============================================================================
 
@@ -431,6 +493,10 @@ test_template() {
     local test_start=$(date +%s)
     local overall_status="passed"
     local error_msg=""
+    local first_failure_stage=""
+    local original_network_mode="${NETWORK_MODE:-}"
+    local auto_network=""
+    local using_auto_network=0
 
     # Check if template directory exists
     if [[ ! -d "$template_dir" ]]; then
@@ -493,12 +559,28 @@ test_template() {
         result+=',"prep":{"status":"failed","duration":"'"${prep_duration}s"'","error":"'"$prep_error"'"}'
         overall_status="failed"
         error_msg="prep() failed"
+        if [[ -z "$first_failure_stage" ]]; then
+            first_failure_stage="prep"
+        fi
+        collect_template_artifacts "$template_path" "$template_dir" "prep"
     fi
 
     # Test up function (only if prep passed or CONTINUE_ON_ERROR is set)
     if [[ "$overall_status" == "passed" ]] || [[ $CONTINUE_ON_ERROR -eq 1 ]]; then
         local up_start=$(date +%s)
         log_verbose "Running up()"
+
+        if [[ $using_auto_network -eq 0 && -z "$original_network_mode" ]]; then
+            auto_network=$(printf '%s' "$template_path" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9' '_')
+            auto_network="rediacc_${auto_network}"
+            log_verbose "Auto-configuring NETWORK_MODE=${auto_network}"
+            if ! docker network inspect "$auto_network" >/dev/null 2>&1; then
+                docker network create "$auto_network" >/dev/null 2>&1 || true
+            fi
+            export NETWORK_MODE="$auto_network"
+            using_auto_network=1
+        fi
+
         if timeout "$TEST_TIMEOUT" bash -c 'source ./Rediaccfile && up' >/dev/null 2>&1; then
             local up_duration=$(($(date +%s) - up_start))
             log_verbose "up() passed (${up_duration}s)"
@@ -516,6 +598,10 @@ test_template() {
             result+=',"up":{"status":"failed","duration":"'"${up_duration}s"'","error":"'"$up_error"'"}'
             overall_status="failed"
             error_msg="up() failed"
+            if [[ -z "$first_failure_stage" ]]; then
+                first_failure_stage="up"
+            fi
+            collect_template_artifacts "$template_path" "$template_dir" "up"
         fi
 
         # Check health (only if up passed or CONTINUE_ON_ERROR is set)
@@ -532,6 +618,10 @@ test_template() {
                 result+=',"health":{"status":"failed","duration":"'"${health_duration}s"'","error":"Health check timeout or containers not healthy"}'
                 overall_status="failed"
                 error_msg="Health check failed"
+                if [[ -z "$first_failure_stage" ]]; then
+                    first_failure_stage="health"
+                fi
+                collect_template_artifacts "$template_path" "$template_dir" "health"
             fi
         fi
 
@@ -557,6 +647,10 @@ test_template() {
             if [[ -z "$error_msg" ]]; then
                 error_msg="down() failed"
             fi
+            if [[ -z "$first_failure_stage" ]]; then
+                first_failure_stage="down"
+            fi
+            collect_template_artifacts "$template_path" "$template_dir" "down"
         fi
     fi
 
@@ -566,11 +660,24 @@ test_template() {
     cleanup_images "$template_dir"
     cleanup_directories "$template_dir"
     cleanup_volumes
+
+    if [[ $using_auto_network -eq 1 && -n "$auto_network" ]]; then
+        log_verbose "Removing auto-configured network: $auto_network"
+        docker network rm "$auto_network" >/dev/null 2>&1 || true
+        unset NETWORK_MODE
+    elif [[ -n "$original_network_mode" ]]; then
+        export NETWORK_MODE="$original_network_mode"
+    fi
+
     local cleanup_duration=$(($(date +%s) - cleanup_start))
     result+=',"cleanup":{"status":"passed","duration":"'"${cleanup_duration}s"'"}'
 
     # Calculate total duration
     local test_duration=$(($(date +%s) - test_start))
+
+    if [[ "$overall_status" == "failed" && -z "$first_failure_stage" ]]; then
+        collect_template_artifacts "$template_path" "$template_dir" "unknown"
+    fi
 
     # Finalize result
     result+=',"overall":"'"$overall_status"'","duration":"'"${test_duration}s"'"'
@@ -742,6 +849,8 @@ main() {
     if [[ ${#SKIP_TEMPLATES[@]} -gt 0 ]]; then
         log_info "Skipping templates: ${SKIP_TEMPLATES[*]}"
     fi
+
+    initialize_artifacts
 
     # Discover templates
     mapfile -t discovery_output < <(discover_templates)
