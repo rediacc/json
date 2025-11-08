@@ -45,21 +45,42 @@ Before using in production:
 6. **Generate DKIM keys** for email authentication
 
 ### Managing Mail Accounts
+
+**Quick Management with tool.sh:**
 ```bash
 # View auto-generated admin credentials
 cat ./docker-data/dms/admin-credentials.txt
 
 # Add additional mail accounts
-docker exec -it mailserver setup email add user@example.com
+./tool.sh email add user@example.com password123
 
 # Change a password
-docker exec -it mailserver setup email update admin@example.com
-
-# Generate DKIM keys (required for production)
-docker exec -it mailserver setup config dkim
+./tool.sh email update admin@example.com newpassword
 
 # List all accounts
+./tool.sh email list
+
+# Delete an account
+./tool.sh email del user@example.com
+
+# Add email alias
+./tool.sh alias add info@example.com admin@example.com
+
+# Set mailbox quota
+./tool.sh quota set user@example.com 2G
+
+# Generate DKIM keys (required for production)
+./tool.sh config dkim
+
+# Show all available commands
+./tool.sh help
+```
+
+**Alternative - Direct docker exec:**
+```bash
+docker exec -it mailserver setup email add user@example.com
 docker exec -it mailserver setup email list
+docker exec -it mailserver setup config dkim
 ```
 
 ## Important Notes
