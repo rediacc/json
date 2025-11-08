@@ -39,8 +39,19 @@ I need you to create a new Rediacc template based on the following project:
    - **.env** - Default environment variables with comments
 
 4. **Critical Requirements:**
-   - ✅ Use relative path bind mounts only (`./data`, `./config`)
-   - ❌ Never use named volumes
+   - ✅ **Data must stay in repo folder** - use either approach:
+     - **Approach 1** (preferred): Direct bind mounts (`./data`, `./config`)
+     - **Approach 2**: Named volumes with local bind driver (for apps requiring specific volume names)
+       ```yaml
+       volumes:
+         volume_name:
+           driver: local
+           driver_opts:
+             type: none
+             o: bind
+             device: ${PWD}/data
+       ```
+   - ❌ **Avoid external named volumes** (without driver_opts binding to repo folder)
    - ✅ Override anonymous volumes with tmpfs if needed
    - ✅ Use `docker compose down -v` in down() function
    - ✅ **CRITICAL: All Rediaccfile functions must return docker compose exit codes, not echo exit codes**
@@ -119,8 +130,10 @@ I need you to create a new Rediacc template based on the following project:
 
 8. **Validation:**
    After creating the template:
-   - Test that `docker volume ls` shows NO volumes after starting services
-   - Verify all data persists in relative directories
+   - **Approach 1**: Verify `ls ./data` shows container data (no volumes in `docker volume ls`)
+   - **Approach 2**: Verify `docker volume inspect <name>` shows Mountpoint in repo folder
+   - Confirm data stays in repo folder, portable when cloning
+   - Verify all data persists in repo directories
    - Confirm `down()` function cleans up properly
    - **Verify ALL services have health checks defined in docker-compose.yaml**
    - **Confirm `docker compose ps` shows ALL services as "healthy"** (not just "Up")

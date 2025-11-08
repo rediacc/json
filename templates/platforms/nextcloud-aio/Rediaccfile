@@ -1,0 +1,47 @@
+#!/bin/bash
+
+# Nextcloud All-in-One Lifecycle Functions
+
+prep() {
+  echo "Pulling Nextcloud AIO master container image..."
+  docker pull nextcloud/all-in-one:latest
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo "Failed to pull image"
+    return $exit_code
+  fi
+
+  echo "Creating configuration directory..."
+  mkdir -p aio-config
+  return $?
+}
+
+up() {
+  echo "Starting Nextcloud AIO master container..."
+  docker compose up -d
+  local exit_code=$?
+  if [ $exit_code -ne 0 ]; then
+    echo "Failed to start Nextcloud AIO"
+    return $exit_code
+  fi
+
+  echo ""
+  echo "Nextcloud AIO master container started successfully!"
+  echo ""
+  echo "Access the management interface:"
+  echo "  1. Run: docker compose ps"
+  echo "  2. Find the mapped port for 8080/tcp"
+  echo "  3. Open: https://localhost:<mapped-port>"
+  echo ""
+  echo "Note: The interface uses a self-signed certificate."
+  echo "Complete the setup wizard to configure your Nextcloud instance."
+  echo ""
+
+  return 0
+}
+
+down() {
+  echo "Stopping Nextcloud AIO and cleaning up..."
+  docker compose down -v
+  return $?
+}

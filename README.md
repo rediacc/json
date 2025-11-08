@@ -426,22 +426,47 @@ services:
 ## Docker Volume Best Practices
 
 ### Core Principle
-**Always use relative path bind mounts (like `./data`). Never use named volumes or allow anonymous volumes.**
+**Data must stay in the repository folder** (same directory as docker-compose.yaml) to ensure portability when repositories are cloned. You can achieve this using two approaches.
 
-### ✅ DO: Use Relative Path Bind Mounts
+### Approach 1: Direct Bind Mounts (Recommended)
+
+Use this approach when possible - it's simpler and more straightforward.
 
 ```yaml
 services:
   db:
     image: postgres
     volumes:
-      - ./data:/var/lib/postgresql/data  # ✅ Relative bind mount
-      - ./config:/etc/postgresql          # ✅ All data stays local
+      - ./data:/var/lib/postgresql/data  # ✅ Data in repo folder
+      - ./config:/etc/postgresql          # ✅ Config in repo folder
 ```
 
-**Why:** Data stays in the same directory as docker-compose.yaml, ensuring portability when repositories are cloned.
+**Why:** Simplest method. Data stays in the same directory as docker-compose.yaml.
 
-### ❌ DON'T: Use Named Volumes
+### Approach 2: Named Volumes with Local Bind Driver
+
+Use this approach when applications validate or require specific volume names.
+
+```yaml
+services:
+  db:
+    image: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data  # ✅ Named volume
+
+volumes:
+  postgres_data:
+    name: postgres_data
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: ${PWD}/data  # ✅ Data still in repo folder
+```
+
+**Why:** Satisfies applications that require specific volume names (like Nextcloud AIO) while keeping data portable.
+
+### ❌ DON'T: Use External Named Volumes
 
 ```yaml
 services:
@@ -451,10 +476,10 @@ services:
       - postgres_data:/var/lib/postgresql/data  # ❌ External volume
 
 volumes:
-  postgres_data:  # ❌ Creates orphaned volume
+  postgres_data:  # ❌ No driver_opts = external storage
 ```
 
-**Why:** Named volumes are stored in Docker's volume directory (usually `/var/lib/docker/volumes/`) and become orphaned when repositories are cloned.
+**Why:** Named volumes without bind driver are stored in Docker's volume directory (`/var/lib/docker/volumes/`) and become orphaned when repositories are cloned.
 
 ### ⚠️ WATCH OUT: Anonymous Volumes
 
@@ -551,28 +576,32 @@ services:
 
 ### Quick Checklist
 
-- [ ] All volumes use relative paths (`./data`, `./config`, etc.)
-- [ ] No `volumes:` section at root level of docker-compose.yaml
+- [ ] All data stays in repo folder (use Approach 1 or Approach 2)
+- [ ] If using named volumes, they must have `driver_opts` binding to repo directory
 - [ ] Images with built-in VOLUMEs explicitly override them with tmpfs or bind mounts
 - [ ] `down()` function uses `docker compose down -v`
 - [ ] Port mappings use container-only format (`"5432"` not `"5432:5432"`)
 - [ ] Using `network_mode` OR `networks`, not both
-- [ ] Test with volume detection: warning should NOT appear
+- [ ] Test: `docker volume ls` shows volumes bound to repo folder, not external storage
 
 ### Testing Your Template
 
 1. Create repository from template
 2. Start services with `docker compose up -d`
-3. Check for external volumes: `docker volume ls`
-   - **Should see: No volumes** (bind mounts don't appear in volume list) ✅
-   - **If you see volumes:** Something is wrong - check for anonymous volumes ❌
-4. In Rediacc system:
-   - CLI will warn about external volumes during startup
+3. Verify data location:
+   - **Approach 1**: Check `ls ./data` shows container data ✅
+   - **Approach 2**: Check `docker volume inspect <volume-name>` shows "Mountpoint" in repo folder ✅
+4. Check for orphaned volumes:
+   - Run `docker volume ls`
+   - Named volumes should have `driver_opts` binding to repo
+   - No anonymous volumes should exist (check with `docker volume ls -f dangling=true`)
+5. In Rediacc system:
+   - CLI will warn about truly external volumes (those outside repo)
    - Console UI shows volume status in repository details
 
 ### Summary
 
-1. **Use bind mounts** (`./path`) for all persistent data
+1. **Keep data in repo folder** - use either Approach 1 (direct bind) or Approach 2 (named with bind driver)
 2. **Prevent anonymous volumes** with tmpfs or explicit bind mounts
 3. **Clean up properly** with `docker compose down -v`
-4. **Test before committing** - no volume warnings should appear
+4. **Test before committing** - data should be in repo directory, portable when cloning
