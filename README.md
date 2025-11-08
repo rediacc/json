@@ -28,7 +28,7 @@ All templates are automatically tested in CI via GitHub Actions. The test script
 1. **prep()** - Verifies image pulls and directory creation (4 minute timeout)
 2. **up()** - Starts services with docker compose (4 minute timeout)
 3. **Health Checks** - Monitors container health (2 minute timeout if defined)
-4. **down()** - Stops services and cleans up volumes (4 minute timeout)
+4. **down()** - Stops services and cleanup (4 minute timeout)
 
 Functions that timeout will be reported with specific timeout errors.
 
@@ -189,14 +189,22 @@ up() {
 
 **`down()` - Highly recommended**
 - Stops services gracefully
-- **Must use `-v` flag** to clean up anonymous volumes
+- **Generally use `-v` flag** to clean up anonymous volumes
+- **Exception**: Omit `-v` for orchestration systems that manage external containers (e.g., Nextcloud AIO)
 - Ensures proper shutdown and cleanup
 - **Must return docker compose exit code**
 
 ```bash
+# Standard templates (use -v to clean anonymous volumes)
 down() {
-  docker compose down -v  # -v flag is critical!
-  return $?  # Returns docker compose exit code
+  docker compose down -v
+  return $?
+}
+
+# Orchestration systems (omit -v to preserve volume objects)
+down() {
+  docker compose down
+  return $?
 }
 ```
 
@@ -513,7 +521,7 @@ services:
 
 ### Rediaccfile `down()` Function
 
-Always use `-v` flag to remove anonymous volumes:
+**Standard templates:** Use `-v` flag to remove anonymous volumes:
 
 ```bash
 down() {
@@ -522,13 +530,19 @@ down() {
 }
 ```
 
-**Not:**
+**Orchestration systems** (that manage external containers): Omit `-v` to preserve volume objects:
+
 ```bash
 down() {
-  docker compose down  # ❌ Leaves orphaned volumes
+  docker compose down  # ✅ Safe for complex orchestration (e.g., Nextcloud AIO)
   return $?
 }
 ```
+
+**Why the difference?**
+- Standard templates: `-v` prevents orphaned anonymous volumes
+- Orchestration systems: Omitting `-v` preserves volume state for containers managed outside compose file
+- Both approaches keep data in repo folder (via bind mounts or named volumes with driver_opts)
 
 ### Port Mapping Best Practices
 

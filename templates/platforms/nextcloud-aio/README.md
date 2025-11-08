@@ -14,7 +14,7 @@ Official Nextcloud All-in-One deployment with master container orchestration for
 source Rediaccfile
 prep  # Pull master container image
 up    # Start Nextcloud AIO
-down  # Stop and cleanup
+down  # Stop Nextcloud AIO
 ```
 
 ## Configuration

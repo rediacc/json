@@ -54,6 +54,7 @@ I need you to create a new Rediacc template based on the following project:
    - ❌ **Avoid external named volumes** (without driver_opts binding to repo folder)
    - ✅ Override anonymous volumes with tmpfs if needed
    - ✅ Use `docker compose down -v` in down() function
+     - **Exception**: Omit `-v` for orchestration systems that manage external containers (e.g., Nextcloud AIO)
    - ✅ **CRITICAL: All Rediaccfile functions must return docker compose exit codes, not echo exit codes**
      - Capture `docker compose` exit code immediately: `local exit_code=$?`
      - Return the captured exit code, not the exit code of subsequent echo statements
@@ -91,7 +92,7 @@ I need you to create a new Rediacc template based on the following project:
    source Rediaccfile
    prep  # Pull images and create directories
    up    # Start [service name]
-   down  # Stop and cleanup
+   down  # Stop [service name]
    ```
 
    ## Configuration

@@ -41,7 +41,7 @@ up() {
 }
 
 down() {
-  echo "Stopping Nextcloud AIO and cleaning up..."
-  docker compose down -v
+  echo "Stopping Nextcloud AIO..."
+  docker compose down
   return $?
 }
