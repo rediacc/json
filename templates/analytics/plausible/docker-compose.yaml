@@ -8,7 +8,7 @@ services:
       - plausible_network
     ports:
       - "${HTTP_PORT:-8000}"
-    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
+    command: sh -c "/entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh run"
     environment:
       - BASE_URL=${BASE_URL:-http://localhost:8000}
       - SECRET_KEY_BASE=${SECRET_KEY_BASE}
@@ -51,6 +51,8 @@ services:
     restart: always
     networks:
       - plausible_network
+    environment:
+      - CLICKHOUSE_SKIP_USER_SETUP=1
     volumes:
       - ./clickhouse-data:/var/lib/clickhouse
       - ./clickhouse-logs:/var/log/clickhouse-server
