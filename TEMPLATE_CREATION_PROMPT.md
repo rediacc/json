@@ -28,6 +28,7 @@ I need you to create a new Rediacc template based on the following project:
      - Anonymous volume prevention (tmpfs for images with built-in VOLUMEs)
      - Proper cleanup with `docker compose down -v`
      - **Health check requirements for ALL services** (see README.md)
+     - **Environment variables** (REPO_LOOPBACK_IP, REPO_NETWORK_MODE) available in execution context
 
 3. **Template Structure:**
    Create a complete template with:
@@ -63,8 +64,12 @@ I need you to create a new Rediacc template based on the following project:
      - ✅ Good: `ports: - "5432"` (Docker assigns random host port)
      - ❌ Bad: `ports: - "5432:5432"` or `- "${PORT}:5432"` (conflicts when cloning)
    - ✅ **Use `network_mode` OR `networks`, never both** (mutually exclusive)
-     - ✅ Good: `network_mode: "${NETWORK_MODE:-bridge}"` (no networks section)
+     - ✅ Good: `network_mode: "${REPO_NETWORK_MODE:-bridge}"` (uses system-provided variable)
      - ❌ Bad: Both `network_mode` AND `networks:` defined (invalid compose)
+   - ✅ **Use system-provided environment variables**:
+     - `REPO_NETWORK_MODE`: Docker network mode (bridge, host, none, overlay, ipvlan, macvlan)
+     - `REPO_LOOPBACK_IP`: Unique loopback IP for the repository (127.11.0.0-127.255.255.255)
+     - See README.md "Environment Variables" section for details
    - ✅ **REQUIRED: Define healthcheck for EVERY service in docker-compose.yaml**
      - All services must have `healthcheck:` with test, interval, timeout, retries, start_period
      - Use appropriate health check commands (pg_isready, curl, redis-cli, etc.)

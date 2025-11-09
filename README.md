@@ -565,6 +565,74 @@ services:
 
 **Why:** When repositories are cloned on the same machine, fixed host ports would conflict. Docker's automatic port assignment ensures each clone gets unique ports.
 
+---
+
+## Environment Variables
+
+The Rediacc system provides several environment variables that are automatically available in your Rediaccfile execution context:
+
+### Repository-Specific Variables
+
+#### `REPO_LOOPBACK_IP`
+**Default:** `0.0.0.0`
+**Range:** `127.11.0.0` to `127.255.255.255`
+**Purpose:** Unique loopback IP address assigned to each repository for Docker container networking.
+
+#### `REPO_NETWORK_MODE`
+**Default:** `bridge`
+**Valid values:** `bridge`, `host`, `none`, `overlay`, `ipvlan`, `macvlan`
+**Purpose:** Docker network mode for repository containers. Controls container networking isolation.
+
+```yaml
+# Example usage in docker-compose.yaml
+services:
+  app:
+    image: myapp
+    network_mode: "${REPO_NETWORK_MODE:-bridge}"
+```
+
+**Network Mode Descriptions:**
+- **`bridge`** (default): Standard Docker bridge networking with container isolation
+- **`host`**: Remove network isolation between container and Docker host
+- **`none`**: Completely isolate container from network
+- **`overlay`**: Swarm overlay networks (multi-host networking)
+- **`ipvlan`**: Connect containers to external VLANs
+- **`macvlan`**: Containers appear as physical devices on network
+
+### Additional System Variables
+
+#### `DOCKER_HOST`
+**Format:** `unix:///var/run/rediacc/{user_id}/{company_short}/{repo_guid}/docker.sock`
+**Purpose:** Path to the repository-specific Docker socket.
+
+#### `REPO_PATH`
+**Format:** `/mnt/datastore/{user_id}/{company_id}/mounts/{repo_guid}`
+**Purpose:** Absolute path to the repository mount directory.
+
+### Using Environment Variables
+
+These variables are automatically exported in the Rediaccfile execution environment. You can use them in:
+
+1. **Rediaccfile functions:**
+```bash
+up() {
+  echo "Repository loopback IP: $REPO_LOOPBACK_IP"
+  echo "Network mode: $REPO_NETWORK_MODE"
+  docker compose up -d
+  return $?
+}
+```
+
+2. **docker-compose.yaml with environment variable substitution:**
+```yaml
+services:
+  app:
+    image: myapp
+    network_mode: "${REPO_NETWORK_MODE:-bridge}"
+```
+
+**Note:** These variables are managed by the Rediacc system and should not be manually set in `.env` files.
+
 ### Network Configuration
 
 **Critical:** Use `network_mode` OR `networks`, never both. They are mutually exclusive in Docker Compose.
