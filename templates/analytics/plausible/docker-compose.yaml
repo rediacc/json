@@ -20,12 +20,6 @@ services:
         condition: service_healthy
       plausible_events_db:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8000/ || exit 1"]
-      interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 80s
 
   plausible_db:
     image: postgres:16-alpine
