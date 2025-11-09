@@ -57,3 +57,19 @@ templates/*/*/prometheus/
 # Test results
 test-results.json
 test-artifacts/
+
+# Template-specific data directories
+templates/*/*-data/
+templates/*/*/*-data/
+templates/*/*-logs/
+templates/*/*/*-logs/
+
+# Template-specific uploads and storage
+templates/*/uploads/
+templates/*/*/uploads/
+
+# Auto-generated secret files
+templates/*/*-secret.txt
+templates/*/*/*-secret.txt
+templates/*/encryption-key.txt
+templates/*/*/encryption-key.txt
