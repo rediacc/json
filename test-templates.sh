@@ -208,7 +208,6 @@ validate_all_containers() {
 
     # Get expected number of services from docker-compose.yaml
     local expected_count=$(docker compose config --services 2>/dev/null | wc -l)
-    [[ $silent -eq 0 ]] && log_verbose "Expected $expected_count container(s) from compose file"
 
     # Get actual container states
     local ps_output=$(docker compose ps --format json 2>/dev/null)
