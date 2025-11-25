@@ -23,6 +23,14 @@
       "type": "localhost",
       "description": "Local development environment",
       "icon": "💻"
+    },
+    {
+      "id": "localhost-80",
+      "name": "Local (Port 80)",
+      "url": "http://localhost:80/api",
+      "type": "localhost",
+      "description": "Local development on port 80",
+      "icon": "🖥️"
     }
   ]
 }
