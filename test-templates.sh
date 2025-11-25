@@ -208,7 +208,7 @@ validate_all_containers() {
 
     # Get expected number of services from docker-compose.yaml
     local expected_count=$(docker compose config --services 2>/dev/null | wc -l)
-    log_verbose "Expected $expected_count container(s) from compose file"
+    [[ $silent -eq 0 ]] && log_verbose "Expected $expected_count container(s) from compose file"
 
     # Get actual container states
     local ps_output=$(docker compose ps --format json 2>/dev/null)
@@ -282,7 +282,7 @@ validate_all_containers() {
     if [[ $check_healthchecks -eq 1 ]]; then
         # When checking healthchecks, all containers should be healthy
         if [[ $healthy_count -eq $expected_count ]]; then
-            log_verbose "All $healthy_count container(s) are healthy"
+            [[ $silent -eq 0 ]] && log_verbose "All $healthy_count container(s) are healthy"
             return 0
         else
             [[ $silent -eq 0 ]] && log_error "Only $healthy_count/$expected_count container(s) are healthy"
@@ -291,7 +291,7 @@ validate_all_containers() {
     else
         # When not checking healthchecks, all containers should be running
         if [[ $running_count -eq $expected_count ]]; then
-            log_verbose "All $running_count container(s) are running"
+            [[ $silent -eq 0 ]] && log_verbose "All $running_count container(s) are running"
             return 0
         else
             [[ $silent -eq 0 ]] && log_error "Only $running_count/$expected_count container(s) are running"
@@ -334,7 +334,10 @@ check_health() {
 
             sleep $interval
             elapsed=$((elapsed + interval))
-            log_verbose "Waiting for health checks... ${elapsed}s/${timeout}s"
+            # Only log progress every 30 seconds to reduce noise
+            if [[ $((elapsed % 30)) -eq 0 ]]; then
+                log_verbose "Waiting for health checks... ${elapsed}s/${timeout}s"
+            fi
         done
 
         log_error "Health check timeout after ${timeout}s"
