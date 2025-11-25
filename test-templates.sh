@@ -191,6 +191,7 @@ discover_templates() {
 validate_all_containers() {
     local template_dir=$1
     local check_healthchecks=${2:-0}
+    local silent=${3:-0}  # When 1, suppress [FAIL] messages (used during polling)
 
     cd "$template_dir" || return 1
 
@@ -201,7 +202,7 @@ validate_all_containers() {
     fi
 
     if [[ ! -f "$compose_file" ]]; then
-        log_error "No docker-compose file found"
+        [[ $silent -eq 0 ]] && log_error "No docker-compose file found"
         return 1
     fi
 
@@ -213,7 +214,7 @@ validate_all_containers() {
     local ps_output=$(docker compose ps --format json 2>/dev/null)
 
     if [[ -z "$ps_output" ]]; then
-        log_error "No containers found (expected $expected_count)"
+        [[ $silent -eq 0 ]] && log_error "No containers found (expected $expected_count)"
         return 1
     fi
 
@@ -262,16 +263,18 @@ validate_all_containers() {
     # Validate container count
     if [[ $container_count -lt $expected_count ]]; then
         local missing=$((expected_count - container_count))
-        log_error "Missing containers: found $container_count, expected $expected_count (missing $missing)"
+        [[ $silent -eq 0 ]] && log_error "Missing containers: found $container_count, expected $expected_count (missing $missing)"
         return 1
     fi
 
     # Report unhealthy containers
     if [[ ${#unhealthy_containers[@]} -gt 0 ]]; then
-        log_error "Unhealthy containers detected:"
-        for container_issue in "${unhealthy_containers[@]}"; do
-            log_error "  - $container_issue"
-        done
+        if [[ $silent -eq 0 ]]; then
+            log_error "Unhealthy containers detected:"
+            for container_issue in "${unhealthy_containers[@]}"; do
+                log_error "  - $container_issue"
+            done
+        fi
         return 1
     fi
 
@@ -282,7 +285,7 @@ validate_all_containers() {
             log_verbose "All $healthy_count container(s) are healthy"
             return 0
         else
-            log_error "Only $healthy_count/$expected_count container(s) are healthy"
+            [[ $silent -eq 0 ]] && log_error "Only $healthy_count/$expected_count container(s) are healthy"
             return 1
         fi
     else
@@ -291,7 +294,7 @@ validate_all_containers() {
             log_verbose "All $running_count container(s) are running"
             return 0
         else
-            log_error "Only $running_count/$expected_count container(s) are running"
+            [[ $silent -eq 0 ]] && log_error "Only $running_count/$expected_count container(s) are running"
             return 1
         fi
     fi
@@ -323,7 +326,8 @@ check_health() {
         # Wait for health checks to pass - poll with comprehensive validation
         log_verbose "Waiting for all containers to be healthy (timeout: ${timeout}s)"
         while [[ $elapsed -lt $timeout ]]; do
-            if validate_all_containers "$template_dir" 1; then
+            # Use silent=1 during polling to suppress [FAIL] messages
+            if validate_all_containers "$template_dir" 1 1; then
                 log_verbose "All containers healthy after ${elapsed}s"
                 return 0
             fi
@@ -334,15 +338,16 @@ check_health() {
         done
 
         log_error "Health check timeout after ${timeout}s"
-        # Run validation one more time to get detailed error output
-        validate_all_containers "$template_dir" 1
+        # Run validation one more time with silent=0 to get detailed error output
+        validate_all_containers "$template_dir" 1 0
         return 1
     else
         # No health checks defined, verify all containers are running
         log_verbose "No health checks defined, verifying all containers are running"
         sleep 10
 
-        if validate_all_containers "$template_dir" 0; then
+        # Use silent=0 here since this is a one-time check, not polling
+        if validate_all_containers "$template_dir" 0 0; then
             return 0
         else
             log_error "Container validation failed"
