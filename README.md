@@ -573,10 +573,47 @@ The Rediacc system provides several environment variables that are automatically
 
 ### Repository-Specific Variables
 
-#### `REPO_LOOPBACK_IP`
-**Default:** `0.0.0.0`
-**Range:** `127.11.0.0` to `127.255.255.255`
-**Purpose:** Unique loopback IP address assigned to each repository for Docker container networking.
+#### `REPO_NETWORK_ID`
+**Default:** `0`
+**Format:** Integer
+**Range:** `2816` to `16777215`
+**Purpose:** Unique network identifier assigned to each repository for Docker container networking.
+
+The middleware assigns each repository a network ID that can be used to calculate unique loopback IP addresses for Docker containers. Each ID is spaced by 64, allowing for a /26 network block (4 usable /27 subnets per repository for future flexibility).
+
+**Client-side IP calculation:**
+```bash
+# Calculate base IP from REPO_NETWORK_ID
+# Formula: 127.X.Y.Z where:
+#   X = REPO_NETWORK_ID / 65536
+#   Y = (REPO_NETWORK_ID / 256) % 256
+#   Z = REPO_NETWORK_ID % 256
+BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"
+
+# Example: REPO_NETWORK_ID=2816 → 127.0.11.0
+# Example: REPO_NETWORK_ID=2880 → 127.0.11.64
+```
+
+```yaml
+# Example in docker-compose.yaml (using shell substitution in Rediaccfile)
+# In your Rediaccfile, calculate the base IP first:
+#   BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"
+#   export BASE_IP
+# Then in docker-compose.yaml:
+services:
+  app:
+    ports:
+      # Bind app to first usable IP (.1)
+      - "${BASE_IP}.1:8080:8080"
+  db:
+    ports:
+      # Bind database to second usable IP (.2)
+      - "${BASE_IP}.2:5432:5432"
+  cache:
+    ports:
+      # Bind cache to third usable IP (.3)
+      - "${BASE_IP}.3:6379:6379"
+```
 
 #### `REPO_NETWORK_MODE`
 **Default:** `bridge`
@@ -616,7 +653,7 @@ These variables are automatically exported in the Rediaccfile execution environm
 1. **Rediaccfile functions:**
 ```bash
 up() {
-  echo "Repository loopback IP: $REPO_LOOPBACK_IP"
+  echo "Repository network ID: $REPO_NETWORK_ID"
   echo "Network mode: $REPO_NETWORK_MODE"
   docker compose up -d
   return $?

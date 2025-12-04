@@ -28,7 +28,7 @@ I need you to create a new Rediacc template based on the following project:
      - Anonymous volume prevention (tmpfs for images with built-in VOLUMEs)
      - Proper cleanup with `docker compose down -v`
      - **Health check requirements for ALL services** (see README.md)
-     - **Environment variables** (REPO_LOOPBACK_IP, REPO_NETWORK_MODE) available in execution context
+     - **Environment variables** (REPO_NETWORK_ID, REPO_NETWORK_MODE) available in execution context
 
 3. **Template Structure:**
    Create a complete template with:
@@ -68,7 +68,9 @@ I need you to create a new Rediacc template based on the following project:
      - ❌ Bad: Both `network_mode` AND `networks:` defined (invalid compose)
    - ✅ **Use system-provided environment variables**:
      - `REPO_NETWORK_MODE`: Docker network mode (bridge, host, none, overlay, ipvlan, macvlan)
-     - `REPO_LOOPBACK_IP`: Unique loopback IP for the repository (127.11.0.0-127.255.255.255)
+     - `REPO_NETWORK_ID`: Unique network identifier (integer, 2816-16777215)
+       - Calculate base IP: `BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"`
+       - Each repository has unique IP addresses based on its network ID
      - See README.md "Environment Variables" section for details
    - ✅ **REQUIRED: Define healthcheck for EVERY service in docker-compose.yaml**
      - All services must have `healthcheck:` with test, interval, timeout, retries, start_period
