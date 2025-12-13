@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# === Renet Compose Support ===
+_use_renet() {
+  [[ -n "$REPOSITORY_NETWORK_ID" ]] && command -v renet &>/dev/null
+}
+_compose() {
+  if _use_renet; then
+    renet compose --network-id "$REPOSITORY_NETWORK_ID" -- "$@"
+  else
+    docker compose "$@"
+  fi
+}
+
 prep() {
     echo "Pulling Neo4j image..."
     docker pull neo4j:5-community
@@ -17,7 +29,7 @@ up() {
     fi
 
     echo "Starting Neo4j server..."
-    docker compose up -d
+    _compose up -d
 
     echo ""
     echo "Waiting for Neo4j to become healthy..."
@@ -48,7 +60,6 @@ up() {
 
 down() {
     echo "Stopping Neo4j server..."
-    docker compose down -v
+    _compose down -v
     return $?
 }
-

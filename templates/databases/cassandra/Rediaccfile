@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# === Renet Compose Support ===
+_use_renet() {
+  [[ -n "$REPOSITORY_NETWORK_ID" ]] && command -v renet &>/dev/null
+}
+_compose() {
+  if _use_renet; then
+    renet compose --network-id "$REPOSITORY_NETWORK_ID" -- "$@"
+  else
+    docker compose "$@"
+  fi
+}
+
 prep() {
     echo "Pulling Cassandra image..."
     docker pull cassandra:5.0
@@ -18,7 +30,7 @@ up() {
 
     echo "Starting Cassandra server..."
     echo "Note: Cassandra may take 30-60 seconds to fully start"
-    docker compose up -d
+    _compose up -d
 
     echo ""
     echo "Waiting for Cassandra to be ready..."
@@ -29,7 +41,6 @@ up() {
 
 down() {
     echo "Stopping Cassandra server..."
-    docker compose down -v
+    _compose down -v
     return $?
 }
-

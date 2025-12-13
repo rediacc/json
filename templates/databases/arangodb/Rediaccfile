@@ -1,5 +1,17 @@
 #!/bin/bash
 
+# === Renet Compose Support ===
+_use_renet() {
+  [[ -n "$REPOSITORY_NETWORK_ID" ]] && command -v renet &>/dev/null
+}
+_compose() {
+  if _use_renet; then
+    renet compose --network-id "$REPOSITORY_NETWORK_ID" -- "$@"
+  else
+    docker compose "$@"
+  fi
+}
+
 prep() {
     echo "Pulling ArangoDB image..."
     docker pull arangodb:3.11
@@ -18,13 +30,12 @@ up() {
     fi
 
     echo "Starting ArangoDB server..."
-    docker compose up -d
+    _compose up -d
     return $?
 }
 
 down() {
     echo "Stopping ArangoDB server..."
-    docker compose down -v
+    _compose down -v
     return $?
 }
-

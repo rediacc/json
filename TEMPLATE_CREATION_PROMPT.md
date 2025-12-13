@@ -28,7 +28,7 @@ I need you to create a new Rediacc template based on the following project:
      - Anonymous volume prevention (tmpfs for images with built-in VOLUMEs)
      - Proper cleanup with `docker compose down -v`
      - **Health check requirements for ALL services** (see README.md)
-     - **Environment variables** (REPO_NETWORK_ID, REPO_NETWORK_MODE) available in execution context
+     - **Environment variables** (REPOSITORY_NETWORK_ID, REPOSITORY_NETWORK_MODE) available in execution context
 
 3. **Template Structure:**
    Create a complete template with:
@@ -64,12 +64,12 @@ I need you to create a new Rediacc template based on the following project:
      - ✅ Good: `ports: - "5432"` (Docker assigns random host port)
      - ❌ Bad: `ports: - "5432:5432"` or `- "${PORT}:5432"` (conflicts when cloning)
    - ✅ **Use `network_mode` OR `networks`, never both** (mutually exclusive)
-     - ✅ Good: `network_mode: "${REPO_NETWORK_MODE:-bridge}"` (uses system-provided variable)
+     - ✅ Good: `network_mode: "${REPOSITORY_NETWORK_MODE:-bridge}"` (uses system-provided variable)
      - ❌ Bad: Both `network_mode` AND `networks:` defined (invalid compose)
    - ✅ **Use system-provided environment variables**:
-     - `REPO_NETWORK_MODE`: Docker network mode (bridge, host, none, overlay, ipvlan, macvlan)
-     - `REPO_NETWORK_ID`: Unique network identifier (integer, 2816-16777215)
-       - Calculate base IP: `BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"`
+     - `REPOSITORY_NETWORK_MODE`: Docker network mode (bridge, host, none, overlay, ipvlan, macvlan)
+     - `REPOSITORY_NETWORK_ID`: Unique network identifier (integer, 2816-16777215)
+       - Calculate base IP: `BASE_IP="127.$((REPOSITORY_NETWORK_ID / 65536)).$((REPOSITORY_NETWORK_ID / 256 % 256)).$((REPOSITORY_NETWORK_ID % 256))"`
        - Each repository has unique IP addresses based on its network ID
      - See README.md "Environment Variables" section for details
    - ✅ **REQUIRED: Define healthcheck for EVERY service in docker-compose.yaml**

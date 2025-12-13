@@ -573,7 +573,7 @@ The Rediacc system provides several environment variables that are automatically
 
 ### Repository-Specific Variables
 
-#### `REPO_NETWORK_ID`
+#### `REPOSITORY_NETWORK_ID`
 **Default:** `0`
 **Format:** Integer
 **Range:** `2816` to `16777215`
@@ -583,21 +583,21 @@ The middleware assigns each repository a network ID that can be used to calculat
 
 **Client-side IP calculation:**
 ```bash
-# Calculate base IP from REPO_NETWORK_ID
+# Calculate base IP from REPOSITORY_NETWORK_ID
 # Formula: 127.X.Y.Z where:
-#   X = REPO_NETWORK_ID / 65536
-#   Y = (REPO_NETWORK_ID / 256) % 256
-#   Z = REPO_NETWORK_ID % 256
-BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"
+#   X = REPOSITORY_NETWORK_ID / 65536
+#   Y = (REPOSITORY_NETWORK_ID / 256) % 256
+#   Z = REPOSITORY_NETWORK_ID % 256
+BASE_IP="127.$((REPOSITORY_NETWORK_ID / 65536)).$((REPOSITORY_NETWORK_ID / 256 % 256)).$((REPOSITORY_NETWORK_ID % 256))"
 
-# Example: REPO_NETWORK_ID=2816 → 127.0.11.0
-# Example: REPO_NETWORK_ID=2880 → 127.0.11.64
+# Example: REPOSITORY_NETWORK_ID=2816 → 127.0.11.0
+# Example: REPOSITORY_NETWORK_ID=2880 → 127.0.11.64
 ```
 
 ```yaml
 # Example in docker-compose.yaml (using shell substitution in Rediaccfile)
 # In your Rediaccfile, calculate the base IP first:
-#   BASE_IP="127.$((REPO_NETWORK_ID / 65536)).$((REPO_NETWORK_ID / 256 % 256)).$((REPO_NETWORK_ID % 256))"
+#   BASE_IP="127.$((REPOSITORY_NETWORK_ID / 65536)).$((REPOSITORY_NETWORK_ID / 256 % 256)).$((REPOSITORY_NETWORK_ID % 256))"
 #   export BASE_IP
 # Then in docker-compose.yaml:
 services:
@@ -615,7 +615,7 @@ services:
       - "${BASE_IP}.3:6379:6379"
 ```
 
-#### `REPO_NETWORK_MODE`
+#### `REPOSITORY_NETWORK_MODE`
 **Default:** `bridge`
 **Valid values:** `bridge`, `host`, `none`, `overlay`, `ipvlan`, `macvlan`
 **Purpose:** Docker network mode for repository containers. Controls container networking isolation.
@@ -625,7 +625,7 @@ services:
 services:
   app:
     image: myapp
-    network_mode: "${REPO_NETWORK_MODE:-bridge}"
+    network_mode: "${REPOSITORY_NETWORK_MODE:-bridge}"
 ```
 
 **Network Mode Descriptions:**
@@ -642,7 +642,7 @@ services:
 **Format:** `unix:///var/run/rediacc/{user_id}/{company_short}/{repo_guid}/docker.sock`
 **Purpose:** Path to the repository-specific Docker socket.
 
-#### `REPO_PATH`
+#### `REPOSITORY_PATH`
 **Format:** `/mnt/datastore/{user_id}/{company_id}/mounts/{repo_guid}`
 **Purpose:** Absolute path to the repository mount directory.
 
@@ -653,8 +653,8 @@ These variables are automatically exported in the Rediaccfile execution environm
 1. **Rediaccfile functions:**
 ```bash
 up() {
-  echo "Repository network ID: $REPO_NETWORK_ID"
-  echo "Network mode: $REPO_NETWORK_MODE"
+  echo "Repository network ID: $REPOSITORY_NETWORK_ID"
+  echo "Network mode: $REPOSITORY_NETWORK_MODE"
   docker compose up -d
   return $?
 }
@@ -665,7 +665,7 @@ up() {
 services:
   app:
     image: myapp
-    network_mode: "${REPO_NETWORK_MODE:-bridge}"
+    network_mode: "${REPOSITORY_NETWORK_MODE:-bridge}"
 ```
 
 **Note:** These variables are managed by the Rediacc system and should not be manually set in `.env` files.
@@ -678,13 +678,13 @@ services:
 # ✅ GOOD - Using network_mode for simple bridge networking
 services:
   app:
-    network_mode: "${NETWORK_MODE:-bridge}"
+    network_mode: "${REPOSITORY_NETWORK_MODE:-bridge}"
     # No 'networks:' section
 
 # ❌ BAD - Both network_mode and networks (invalid)
 services:
   app:
-    network_mode: "${NETWORK_MODE:-bridge}"
+    network_mode: "${REPOSITORY_NETWORK_MODE:-bridge}"
     networks:
       - mynetwork  # ❌ Conflicts with network_mode
 ```
