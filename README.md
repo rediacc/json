@@ -639,11 +639,11 @@ services:
 ### Additional System Variables
 
 #### `DOCKER_HOST`
-**Format:** `unix:///var/run/rediacc/{user_id}/{organization_short}/{repo_guid}/docker.sock`
+**Format:** `unix:///var/run/rediacc/{user_id}/{organization_short}/{repository_guid}/docker.sock`
 **Purpose:** Path to the repository-specific Docker socket.
 
 #### `REPOSITORY_PATH`
-**Format:** `/mnt/rediacc/{user_id}/{organization_id}/mounts/{repo_guid}`
+**Format:** `/mnt/rediacc/{user_id}/{organization_id}/mounts/{repository_guid}`
 **Purpose:** Absolute path to the repository mount directory.
 
 ### Using Environment Variables
